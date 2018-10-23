@@ -1,0 +1,1 @@
+We define a neural network simply as a container of layers. We also add an errors instance variable that will be useful to trace the evolution of error during the learning phase.

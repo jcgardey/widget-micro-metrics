@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "JulianGrigera 4/18/2018 09:44",
+	"super" : "TestCase",
+	"category" : "MicroMetrics-Tests",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"simple"
+	],
+	"name" : "NeuronTest",
+	"type" : "normal"
+}

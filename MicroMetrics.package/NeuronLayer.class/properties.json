@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "JulianGrigera 4/22/2018 17:56",
+	"super" : "Object",
+	"category" : "MicroMetrics-Model",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"previousLayer",
+		"nextLayer",
+		"neurons",
+		"learningRate"
+	],
+	"name" : "NeuronLayer",
+	"type" : "normal"
+}

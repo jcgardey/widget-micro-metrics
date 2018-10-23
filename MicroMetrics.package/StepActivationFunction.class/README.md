@@ -1,0 +1,1 @@
+Step Function. Using this on a Neuron will turn it into a simple Perceptron

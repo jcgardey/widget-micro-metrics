@@ -1,0 +1,17 @@
+{
+	"commentStamp" : "JulianGrigera 4/18/2018 10:48",
+	"super" : "Object",
+	"category" : "MicroMetrics-Model",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"weights",
+		"bias",
+		"activationFunction",
+		"delta",
+		"output"
+	],
+	"name" : "Neuron",
+	"type" : "normal"
+}

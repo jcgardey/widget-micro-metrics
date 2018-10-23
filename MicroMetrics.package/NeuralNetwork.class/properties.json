@@ -1,0 +1,14 @@
+{
+	"commentStamp" : "JulianGrigera 4/22/2018 18:56",
+	"super" : "Object",
+	"category" : "MicroMetrics-Model",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"layers",
+		"errors"
+	],
+	"name" : "NeuralNetwork",
+	"type" : "normal"
+}

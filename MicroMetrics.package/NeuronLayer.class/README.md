@@ -1,0 +1,2 @@
+We define a layer as a set of neurons. Each layer knows about the preceding layer using the variable previousLayer and the following layer using nextLayer. The learningRate variable refers to the learning rate of the layer.
+A layer contains some neurons, kept in the variable neurons. Tthe learning rate of a layer is 0.1 by default. 
