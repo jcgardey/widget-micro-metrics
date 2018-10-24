@@ -1,3 +1,4 @@
+var capturerServerURL = "http://localhost:1701/metrics/";
 var previousElement;
 var elementChanged;
 var focusTime;
@@ -58,6 +59,9 @@ $("input").on('focus blur keypress keydown keyup', function (e) {
                 "typingIntervals": typingIntervals,
                 "correctionAmount": charsDeleted
             };
+
+            $.post( capturerServerURL, metrics );
+
             var metrics_array = JSON.parse(localStorage.getItem("metrics"));
             metrics_array.push(metrics);
             localStorage.setItem("metrics", JSON.stringify(metrics_array));
@@ -134,7 +138,3 @@ function SelectMetrics() {
 
 
 }
-
-
-
-
