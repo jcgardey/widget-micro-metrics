@@ -1,3 +1,3 @@
 initialization
 metricsToCapture
-	^ #(typingLatency totalTypingTime typingSpeed typingVariance correctionAmount)
+	^ #(id timestamp typingLatency totalTypingTime typingSpeed typingVariance correctionAmount)
