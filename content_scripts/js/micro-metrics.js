@@ -8,7 +8,7 @@ var typingIntervals = [];
 var lastKeypressTimestamp = 0;
 var charsDeleted = 0;
 
-$("body").prepend("<div id='snackbar'></div>");
+$("body").prepend("<div id='snackbar' style='z-index:1009;padding:20px;text-align:left;color:white;position:fixed;right:0;display:block;background:#333;display:none;'></div>");
 
 $("input").on('focus blur keypress keydown keyup', function (e) {
     switch (e.type) {
@@ -87,10 +87,10 @@ function getRandomID () {
 }
 
 function showSnackBar(aMessage) {
-    var snackbar = $("#snackbar")[0];
-    $(snackbar).html(aMessage);
-    snackbar.className = "show";
-    setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+    var snackbar = $($("#snackbar")[0]);
+    snackbar.html(aMessage);
+    snackbar.show();
+    setTimeout(function(){ snackbar.hide(); }, 1500);
 }
 
 
