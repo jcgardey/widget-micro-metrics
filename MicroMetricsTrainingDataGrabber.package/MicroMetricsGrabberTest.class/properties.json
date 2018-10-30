@@ -5,7 +5,9 @@
 	"classinstvars" : [ ],
 	"pools" : [ ],
 	"classvars" : [ ],
-	"instvars" : [ ],
+	"instvars" : [
+		"grabber"
+	],
 	"name" : "MicroMetricsGrabberTest",
 	"type" : "normal"
 }
