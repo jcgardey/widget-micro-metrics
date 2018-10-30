@@ -4,15 +4,7 @@ metricsCSVData
 		streamContents: [ :stream | 
 			| writer |
 			writer := NeoCSVWriter on: stream.
-			writer
-				nextPutAll:
-					#(#('typingLatency' 'totalTypingTime' 'typingSpeed' 'typingVariance' 'correctionAmount')).
+			writer nextPut: self metricsToCapture.
 			self metrics
-				do: [ :metric | 
-					writer
-						nextPut:
-							{(metric at: 'typingLatency').
-							(metric at: 'totalTypingTime').
-							(metric at: 'typingSpeed').
-							(metric at: 'typingVariance').
-							(metric at: 'correctionAmount')} ] ]
+				do:
+					[ :metric | writer nextPut: (self metricsToCapture collect: [ :metricName | metric at: metricName ]) ] ]
