@@ -8,7 +8,8 @@ var typingIntervals = [];
 var lastKeypressTimestamp = 0;
 var charsDeleted = 0;
 
-$("body").prepend("<div id='snackbar' style='z-index:1009;padding:20px;text-align:left;color:white;position:fixed;right:0;display:block;background:#333;display:none;'></div>");
+
+//$("body").prepend("<div id='snackbar' style='z-index:1009;padding:20px;text-align:left;color:white;position:fixed;right:0;display:block;background:#333;display:none;'></div>");
 
 $("input").on('focus blur keypress keydown keyup', function (e) {
     switch (e.type) {
@@ -51,11 +52,8 @@ $("input").on('focus blur keypress keydown keyup', function (e) {
                 };
                 $.post( capturerServerURL, metrics );
                 console.log(metrics);
-                metrics_string = "<strong>id: </strong>" + metrics.id + "<br><strong>timestamp: </strong>" + metrics.timestamp + "<br><strong>typingLatency: </strong>" + metrics.typingLatency
-                    + "<br><strong>totalTypingTime: </strong>" + metrics.totalTypingTime
-                    + "<br><strong>typingSpeed: </strong>" + metrics.typingSpeed + "<br><strong>typingVariance: </strong>" + metrics.typingVariance +
-                    "<br><strong>correctionAmount: </strong>" + metrics.correctionAmount;
-                showSnackBar(metrics_string);
+                //showSnackBar(metrics.id);
+                $("title").text(metrics.id);
             }
             charsTyped = 0;
             alreadyTyped = false;
@@ -83,7 +81,7 @@ function calculateVariance(intervals) {
 }
 
 function getRandomID () {
-    return  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    return  Math.random().toString(36).substring(2, 15);
 }
 
 function showSnackBar(aMessage) {
