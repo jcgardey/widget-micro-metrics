@@ -50,6 +50,7 @@ function logMetrics(metrics) {
                 // if typingLatency is undefined the others metrics are undefined too
                 if (typingLatency) {
                     metrics = {
+                        "widgetType": "TextInput",
                         "typingLatency": typingLatency,
                         "totalTypingTime": totalTypingTime,
                         "typingSpeed": typingSpeed,
@@ -129,7 +130,7 @@ function SelectMetrics() {
 
     $("select").on("blur", function (e) {
         var now = e.timeStamp;
-        logMetrics({"clicks": clicks, "keystrokes": keystrokes, "optionsSelected": optionsSelected,
+        logMetrics({"widgetType": "SelectInput", "clicks": clicks, "keystrokes": keystrokes, "optionsSelected": optionsSelected,
             "focusTime": now - focusTime, "optionsDisplayTime": optionsDisplayTime});
         clicks = 0;
         keystrokes = 0;
