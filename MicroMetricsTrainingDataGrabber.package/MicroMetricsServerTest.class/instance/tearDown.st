@@ -1,3 +1,3 @@
 running
 tearDown
-	grabber stop
+	server stop
