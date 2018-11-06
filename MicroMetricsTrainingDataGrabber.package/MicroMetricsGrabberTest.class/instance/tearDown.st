@@ -1,0 +1,3 @@
+running
+tearDown
+	grabber stop

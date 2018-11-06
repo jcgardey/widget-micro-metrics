@@ -6,6 +6,7 @@ initialize
 	grabbers at: #SelectInput put: SelectInputGrabber new.
 	
 	server := Teapot on
-		GET: '/ping' -> 'pong';
-		POST: '/metrics/' -> [ :request | self captureMetricFrom: request ].
+		GET: '/micrometrics/ping' -> 'pong';
+		GET: '/micrometrics/metricsData' -> [ :req | TeaResponse ok body: self metricsCSVData ];
+		POST: '/micrometrics/metrics/' -> [ :request | self captureMetricFrom: request ].
 	server start

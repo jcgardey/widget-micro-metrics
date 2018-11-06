@@ -1,9 +1,10 @@
 tests-initialization
 testCaptureMetricFrom
+
 	| server |
 	server := MicroMetricsServer onPort: 1709.
 	ZnClient new
-		url: 'http://localhost:1709/metrics/';
+		url: 'http://localhost:' , self portForTesting printString , '/micrometrics/metrics/';
 		formAt: 'widgetType' put: 'TextInput';
 		formAt: 'typingLatency' put: '1';
 		formAt: 'totalTypingTime' put: '2';
@@ -14,3 +15,4 @@ testCaptureMetricFrom
 		post.
 	self assert: (server grabbers at: #TextInput) metrics size equals: 1.
 	server stop
+
