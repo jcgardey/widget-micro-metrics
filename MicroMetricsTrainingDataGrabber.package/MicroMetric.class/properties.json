@@ -8,7 +8,8 @@
 	"instvars" : [
 		"id",
 		"timestamp",
-		"valuesDictionary"
+		"valuesDictionary",
+		"ratings"
 	],
 	"name" : "MicroMetric",
 	"type" : "normal"
