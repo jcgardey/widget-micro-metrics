@@ -1,0 +1,1 @@
+I capture select input interactions

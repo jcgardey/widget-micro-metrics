@@ -11,4 +11,4 @@ testCaptureMetricFrom
 		formAt: 'typingVariance' put: '4';
 		formAt: 'correctionAmount' put: '6';
 		post.
-	self assert: (server grabbers at: #TextInput) metrics size equals: 1
+	self assert: server metrics size equals: 1

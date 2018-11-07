@@ -1,3 +1,5 @@
 instance creation
 onPort: aPort
-	^ self new initializeWithPort: aPort
+	^ super new
+		initializeWithPort: aPort;
+		yourself

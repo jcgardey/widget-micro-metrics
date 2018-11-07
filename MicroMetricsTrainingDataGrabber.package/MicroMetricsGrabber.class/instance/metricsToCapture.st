@@ -1,0 +1,3 @@
+initialization
+metricsToCapture
+	^ self subclassResponsibility
