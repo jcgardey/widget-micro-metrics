@@ -1,4 +1,4 @@
 singleton
 resetInstance
-	Instance stop.
+	Instance ifNotNil: [ :server | server stop ].
 	Instance := nil
