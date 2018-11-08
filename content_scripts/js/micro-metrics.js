@@ -1,5 +1,5 @@
 //$("body").prepend("<div id='snackbar' style='z-index:1009;padding:20px;text-align:left;color:white;position:fixed;right:0;display:block;background:#333;display:none;'></div>");
-var capturerServerURL = "http://localhost:1701/metrics/";
+var capturerServerURL = "http://localhost:1701/micrometrics/metrics/";
 
 function logMetrics(metrics) {
     metrics["id"] = getRandomID();
