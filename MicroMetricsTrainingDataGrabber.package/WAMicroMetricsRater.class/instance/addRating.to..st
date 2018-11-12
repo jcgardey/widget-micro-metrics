@@ -1,3 +1,4 @@
 controlling
 addRating: aNumber to: aMicroMetric
-	aMicroMetric addRating: raterId -> aNumber
+	raterId ~= '' & (aNumber ~= '')
+		ifTrue: [ aMicroMetric addRating: raterId -> aNumber ]
