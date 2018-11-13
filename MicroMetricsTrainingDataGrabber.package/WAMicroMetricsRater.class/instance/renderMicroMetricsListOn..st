@@ -1,8 +1,12 @@
 rendering
 renderMicroMetricsListOn: html
+	| grouped |
+	grouped := self microMetrics groupedBy: [ :metric | metric sampleId ].
 	html heading level4 with: 'MicroMetrics'.
-	html
-		tbsPanelGroup: [ self microMetrics
-				do: [ :microMetric | 
-					html tbsPanel beDefault
-						with: [ self renderMicroMetric: microMetric formOn: html ] ] ]
+	grouped
+		keysAndValuesDo: [ :sampleId :sampleMetrics | 
+			html heading level5 with: sampleId.
+			html
+				tbsPanelGroup: [ sampleMetrics
+						do:
+							[ :microMetric | html tbsPanel beDefault with: [ self renderMicroMetric: microMetric formOn: html ] ] ] ]
