@@ -9,7 +9,7 @@ train: train nbEpoch: nbEpoch
 			do: [ :row | 
 				outputs := self feed: row allButLast.
 				expectedOutput := (1 to: self numberOfOutputs) collect: [ :notUsed | 0 ].
-				expectedOutput at: row last + 1 put: 1.
+				expectedOutput at: row last put: 1.
 				t := (1 to: expectedOutput size)
 					collect: [ :i | (expectedOutput at: i) - (outputs at: i) raisedTo: 2 ].
 				sumError := sumError + t sum.
