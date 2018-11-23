@@ -8,5 +8,7 @@ renderMicroMetricsListOn: html
 			html heading level5 with: sampleId.
 			html
 				tbsPanelGroup: [ sampleMetrics
-						do:
-							[ :microMetric | html tbsPanel beDefault with: [ self renderMicroMetric: microMetric formOn: html ] ] ] ]
+						do: [ :microMetric | 
+							html tbsPanel beDefault
+								class: 'panel-danger' if: self mergeMode & microMetric inConflict;
+								with: [ self renderMicroMetric: microMetric formOn: html ] ] ] ]

@@ -1,4 +1,5 @@
 rendering
 renderHeadingOn: html
 	html tbsNavbar: [ html heading: 'MicroMetrics Rater' ].
-	html paragraph: [ self renderDownladButtonOn: html ]
+	html paragraph: [ self renderDownladButtonOn: html ].
+	html paragraph: [ self renderMergeModeButtonOn: html ]

@@ -6,4 +6,13 @@ renderMicroMetric: microMetric formOn: html
 				space;
 				text: microMetric timestamp asFileNameCompatibleString ];
 		tbsPanelBody: [ html textInput callback: [ :value | self addRating: value to: microMetric ].
-			microMetric raters do: [ :rater | html tbsBadge: rater ] separatedBy: [ html space ] ]
+			microMetric ratings
+				do: [ :rating | 
+					html
+						tbsBadge: [ html text: rating key.
+							self mergeMode
+								ifTrue: [ html space.
+									html tbsGlyphIcon iconArrowRight.
+									html space.
+									html text: rating value ] ] ]
+				separatedBy: [ html space ] ]
