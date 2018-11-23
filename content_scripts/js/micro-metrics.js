@@ -1,12 +1,30 @@
-//$("body").prepend("<div id='snackbar' style='z-index:1009;padding:20px;text-align:left;color:white;position:fixed;right:0;display:block;background:#333;display:none;'></div>");
+
 var capturerServerURL = "http://localhost:1701/micrometrics/metrics/";
+var widgets = {};
+
+function getWidgetMicroMetrics(anElement) {
+    metricId = anElement.getAttribute("data-metric-id");
+    if (!metricId) {
+        anElement.setAttribute("data-metric-id",getRandomID());
+        metricId = anElement.getAttribute("data-metric-id");
+    }
+    if (!widgets[metricId]) {
+        widgets[metricId] = {"id": metricId};
+        if (anElement.tagName.toLowerCase() == "input") {
+            widgets[metricId] = Object.assign({}, widgets[metricId], {"widgetType": "TextInput", "typingLatency": 0, "typingSpeed": 0,
+                "typingVariance": null,"totalTypingTime": 0, "correctionAmount": 0, "typingIntervals": []});
+        }
+        else {
+            widgets[metricId] = Object.assign({}, widgets[metricId], {"widgetType": "SelectInput", "clicks": 0, "keystrokes": 0,
+                "optionsSelected": 0,"focusTime": 0, "optionsDisplayTime": 0});
+        }
+    }
+    return widgets[metricId];
+}
 
 function logMetrics(metrics) {
-    metrics["id"] = getRandomID();
     metrics["timestamp"] = new Date().getTime();
-    $.post(capturerServerURL, metrics);
     console.log(metrics);
-    //showSnackBar(metrics.id);
     $("title").text(metrics.id);
 }
 
@@ -26,7 +44,7 @@ function logMetrics(metrics) {
                 focusTime = e.timeStamp;
             case "keydown":
                 if (e.keyCode === 8) {
-                    charsDeleted++;
+                    getWidgetMicroMetrics(e.target).correctionAmount++;
                 }
                 break;
             case "keypress":
@@ -39,27 +57,22 @@ function logMetrics(metrics) {
                 if (lastKeypressTimestamp != 0) {
                     var switchingTime = e.timeStamp;
                     var intraKeypressInterval = switchingTime - lastKeypressTimestamp;
-                    typingIntervals.push(intraKeypressInterval);
+                    getWidgetMicroMetrics(e.target).typingIntervals.push(intraKeypressInterval);
                 }
                 lastKeypressTimestamp = e.timeStamp;
                 break;
             case "blur":
-                totalTypingTime = e.timeStamp - (focusTime + typingLatency);
-                typingSpeed = totalTypingTime / charsTyped;
-
-                // if typingLatency is undefined the others metrics are undefined too
-                if (typingLatency) {
-                    metrics = {
-                        "widgetType": "TextInput",
-                        "typingLatency": typingLatency,
-                        "totalTypingTime": totalTypingTime,
-                        "typingSpeed": typingSpeed,
-                        "typingVariance": calculateVariance(typingIntervals),
-                        "typingIntervals": typingIntervals,
-                        "correctionAmount": charsDeleted
-                    };
-                    logMetrics(metrics);
+                if (charsTyped) {
+                    totalTypingTime = e.timeStamp - (focusTime + typingLatency);
+                    getWidgetMicroMetrics(e.target).totalTypingTime += totalTypingTime;
+                    getWidgetMicroMetrics(e.target).typingSpeed += totalTypingTime / charsTyped;
+                    getWidgetMicroMetrics(e.target).typingVariance = calculateVariance(getWidgetMicroMetrics(e.target).typingIntervals);
                 }
+                else {
+                    typingLatency = e.timeStamp - focusTime;
+                }
+                getWidgetMicroMetrics(e.target).typingLatency += typingLatency;
+                logMetrics(getWidgetMicroMetrics(e.target));
                 charsTyped = 0;
                 alreadyTyped = false;
                 typingIntervals = [];
@@ -73,14 +86,17 @@ function logMetrics(metrics) {
     });
 
 function calculateVariance(intervals) {
+    if (intervals.length == 0) {
+        return null;
+    }
     var total = 0;
     var total_power_of_two = 0;
     $.each(intervals, function (i, interval) {
         total += interval;
         total_power_of_two += Math.pow(interval, 2);
     });
-    var media = total / typingIntervals.length;
-    var variance = (total_power_of_two / typingIntervals.length) - Math.pow(media, 2);
+    var media = total / intervals.length;
+    var variance = (total_power_of_two / intervals.length) - Math.pow(media, 2);
     return Math.pow(variance, 1 / 2); // standard deviation
 
 }
@@ -89,18 +105,7 @@ function getRandomID () {
     return  Math.random().toString(36).substring(2, 15);
 }
 
-function showSnackBar(aMessage) {
-    var snackbar = $($("#snackbar")[0]);
-    snackbar.html(aMessage);
-    snackbar.show();
-    setTimeout(function(){ snackbar.hide(); }, 1500);
-}
-
-
 function SelectMetrics() {
-    var clicks = 0;
-    var keystrokes = 0;
-    var optionsSelected = 0;
     var focusTime;
     var openTime;
     var optionsDisplayTime = 0;
@@ -112,31 +117,31 @@ function SelectMetrics() {
     // triggered only when options box is opened
     $("select").on("mousedown", function (e) {
         openTime = e.timeStamp;
-        clicks++;
+        getWidgetMicroMetrics(e.target).clicks++;
     });
 
 
     $("select").on("change", function (e) {
-        optionsSelected++;
+        getWidgetMicroMetrics(e.target).optionsSelected++;
         if (openTime) {
-            optionsDisplayTime += e.timeStamp - openTime;
+            getWidgetMicroMetrics(e.target).optionsDisplayTime += e.timeStamp - openTime;
         }
     });
 
     // only triggered when options box is closed
     $("select").on("keypress", function () {
-        keystrokes++;
+        getWidgetMicroMetrics(e.target).keystrokes++;
     });
 
     $("select").on("blur", function (e) {
         var now = e.timeStamp;
-        logMetrics({"widgetType": "SelectInput", "clicks": clicks, "keystrokes": keystrokes, "optionsSelected": optionsSelected,
-            "focusTime": now - focusTime, "optionsDisplayTime": optionsDisplayTime});
-        clicks = 0;
-        keystrokes = 0;
-        optionsSelected = 0;
-        optionsDisplayTime = 0;
+        getWidgetMicroMetrics(e.target).focusTime += now - focusTime;
+        logMetrics(getWidgetMicroMetrics(e.target));
     });
 }
 
 SelectMetrics();
+
+window.onblur = function() {
+    //$.post(capturerServerURL, widgets);
+};
