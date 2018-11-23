@@ -1,3 +1,3 @@
 initialization
 metricsToCapture
-	^ self subclassResponsibility
+	^ #(widgetType authorId volunteer)

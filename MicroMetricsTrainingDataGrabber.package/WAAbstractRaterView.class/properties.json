@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "JulianGrigera 11/23/2018 13:22",
+	"super" : "WAComponent",
+	"category" : "MicroMetricsTrainingDataGrabber-Frontend",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"microMetrics"
+	],
+	"name" : "WAAbstractRaterView",
+	"type" : "normal"
+}

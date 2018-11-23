@@ -1,11 +1,15 @@
 {
-	"commentStamp" : "JulianGrigera 11/7/2018 13:18",
+	"commentStamp" : "JulianGrigera 11/23/2018 12:50",
 	"super" : "WAAbstractRaterView",
 	"category" : "MicroMetricsTrainingDataGrabber-Frontend",
 	"classinstvars" : [ ],
 	"pools" : [ ],
 	"classvars" : [ ],
-	"instvars" : [ ],
-	"name" : "WAMicroMetricsRater",
+	"instvars" : [
+		"sampleId",
+		"raterId",
+		"mergeMode"
+	],
+	"name" : "WASampleView",
 	"type" : "normal"
 }

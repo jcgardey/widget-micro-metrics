@@ -1,3 +1,4 @@
 initialization
 metricsToCapture
-	^ #(clicks focusTime keystrokes optionsDisplayTime optionsSelected)
+	^ super metricsToCapture
+		, #(clicks focusTime keystrokes optionsDisplayTime optionsSelected)
