@@ -4,5 +4,4 @@ predict: inputs
     "The index of a collection begins at 1 in Pharo"
     | outputs |
     outputs := self feed: inputs.
-	^ outputs.
-    "^ (outputs indexOf: (outputs max))"
+    ^ (outputs indexOf: (outputs max))
