@@ -4,6 +4,8 @@ testCaptureMetricFrom
 		url: 'http://localhost:' , self portForTesting printString , '/micrometrics/metrics/';
 		formAt: 'widgetType' put: 'TextInput';
 		formAt: 'id' put: '1';
+		formAt: 'authorId' put: '1';
+		formAt: 'volunteer' put: '1';
 		formAt: 'timestamp' put: '1';
 		formAt: 'typingLatency' put: '1';
 		formAt: 'totalTypingTime' put: '2';
