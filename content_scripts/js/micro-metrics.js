@@ -1,5 +1,6 @@
-
-var capturerServerURL = "http://localhost:1701/micrometrics/metrics/";
+var authorId = "tu_nombre";
+var volunteer = "numero_de_voluntario";
+var capturerServerURL = "https://autorefactoring.lifia.info.unlp.edu.ar/micrometrics/metrics/";
 var widgets = {};
 
 function getWidgetMicroMetrics(anElement) {
@@ -9,7 +10,7 @@ function getWidgetMicroMetrics(anElement) {
         metricId = anElement.getAttribute("data-metric-id");
     }
     if (!widgets[metricId]) {
-        widgets[metricId] = {"id": metricId};
+        widgets[metricId] = {"id": metricId, "url": window.location.href, "authorId": authorId, "volunteer": volunteer};
         if (anElement.tagName.toLowerCase() == "input") {
             widgets[metricId] = Object.assign({}, widgets[metricId], {"widgetType": "TextInput", "typingLatency": 0, "typingSpeed": 0,
                 "typingVariance": null,"totalTypingTime": 0, "correctionAmount": 0, "typingIntervals": []});
@@ -143,5 +144,8 @@ function SelectMetrics() {
 SelectMetrics();
 
 window.onblur = function() {
-    //$.post(capturerServerURL, widgets);
+    Object.keys(widgets).forEach(function(key) {
+        console.log(widgets[key]);
+        $.post(capturerServerURL, widgets[key]);
+    });
 };
