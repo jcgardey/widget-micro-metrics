@@ -6,4 +6,6 @@ cleanTextInputMetrics
 		select: [ :metric | 
 			(metric valuesDictionary at: #widgetType) = 'TextInput'
 				and: [ (metric valuesDictionary at: #typingSpeed) ~= '0' ] ].
+	textInputMetrics := textInputMetrics
+		reject: [ :metric | (metric valuesDictionary at: #typingVariance) = 'NaN' ].
 	^ textInputMetrics
