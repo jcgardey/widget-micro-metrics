@@ -41,9 +41,9 @@ function logMetrics(metrics) {
 
     var startingTop,startingLeft;
     var lastTop,lastLeft;
-    var distance = 0;
     var mouseTraceLength = 0;
     var currentWidget,currentWidgetCenter,lastWidget;
+    var mouseBlur = null;
 
     $(document).mousemove(function(e) {
       if (typeof(currentWidget) != "undefined") {
@@ -55,17 +55,10 @@ function logMetrics(metrics) {
           startingLeft = e.pageX;
           lastTop = e.pageY;
           lastLeft = e.pageX;
-          distance = 0;
           mouseTraceLength = 0;
           lastWidget = currentWidget;
         }
 
-        distance = Math.round(
-                        Math.sqrt(
-                          Math.pow(currentWidgetCenter['y'] - e.pageY, 2) +
-                          Math.pow(currentWidgetCenter['x'] - e.pageX, 2)
-                        )
-                      );
         var delta = Math.round(
                         Math.sqrt(
                           Math.pow(lastTop - e.pageY, 2) +
@@ -76,17 +69,42 @@ function logMetrics(metrics) {
         lastTop = e.pageY;
         lastLeft = e.pageX;
 
-        if (distance<150){
+        if (withinRectangle({x:e.pageX, y:e.pageY}, getWidgetSurroundings(currentWidget))){
           mouseTraceLength += delta;
+          mouseBlur = null;
+        }
+        else{
+          mouseBlur = e.timeStamp;
         }
       }
     });
+
+    function withinRectangle(point, rectangle){
+      return (
+                (point.x > rectangle.topLeft.x) && (point.x < rectangle.bottomRight.x) &&
+                (point.y > rectangle.topLeft.y) && (point.y < rectangle.bottomRight.y)
+
+              )
+    }
 
     function getOffset(el) {
       const rect = el.getBoundingClientRect();
       return {
         left: rect.left + window.scrollX,
         top: rect.top + window.scrollY
+      };
+    }
+
+    function getWidgetSurroundings(el) {
+      margin = 40;
+      const rect = el.getBoundingClientRect();
+      const left = rect.left + window.scrollX;
+      const top = rect.top + window.scrollY;
+      const right = rect.right + window.scrollX;
+      const bottom = rect.bottom + window.scrollY;
+      return {
+        topLeft: {x:left - margin, y:top - margin},
+        bottomRight: {x:right + margin, y:bottom + margin}
       };
     }
 
@@ -117,7 +135,16 @@ function logMetrics(metrics) {
                 break;
             case "blur":
                 if (charsTyped) {
-                    totalTypingTime = e.timeStamp - (focusTime + typingLatency);
+                    if (mouseBlur != null) {
+                      lastFocusTime = mouseBlur;
+                      mouseBlur = null;
+                      console.log("Using MOUSE blur at: "+lastFocusTime);
+                    }
+                    else {
+                      lastFocusTime = e.timeStamp;
+                      console.log("Using REAL blur at: "+lastFocusTime);
+                    }
+                    totalTypingTime = lastFocusTime - (focusTime + typingLatency);
                     getWidgetMicroMetrics(e.target).totalTypingTime += totalTypingTime;
                     getWidgetMicroMetrics(e.target).typingSpeed += totalTypingTime / charsTyped;
                     getWidgetMicroMetrics(e.target).typingVariance = calculateVariance(getWidgetMicroMetrics(e.target).typingIntervals);
