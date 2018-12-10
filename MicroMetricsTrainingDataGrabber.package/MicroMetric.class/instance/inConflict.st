@@ -1,3 +1,3 @@
 testing
 inConflict
-	^ (self ratings collect: [ :rating | rating value ]) asSet size > 1
+	^ self ratingValues asSet size > 1
