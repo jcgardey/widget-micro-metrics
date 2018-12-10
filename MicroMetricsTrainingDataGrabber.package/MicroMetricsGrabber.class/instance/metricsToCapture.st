@@ -1,3 +1,3 @@
 initialization
 metricsToCapture
-	^ #(widgetType authorId volunteer)
+	^ #(widgetType authorId volunteer interactions)
