@@ -1,6 +1,6 @@
 var authorId = "tu_nombre";
 var volunteer = "numero_de_voluntario";
-var capturerServerURL = "https://autorefactoring.lifia.info.unlp.edu.ar/micrometrics/metrics/";
+var capturerServerURL = "http://localhost:1701/micrometrics/metrics/";
 var widgets = {};
 
 function getWidgetMicroMetrics(anElement) {
@@ -26,6 +26,7 @@ function getWidgetMicroMetrics(anElement) {
 function logMetrics(metrics) {
     metrics["timestamp"] = new Date().getTime();
     console.log(metrics);
+    metrics["sent"] = false;
     $("title").text(metrics.id);
 }
 
@@ -64,27 +65,27 @@ function logMetrics(metrics) {
                 break;
             case "blur":
                 if (charsTyped) {
-                    totalTypingTime = e.timeStamp - (focusTime + typingLatency);
-                    getWidgetMicroMetrics(e.target).totalTypingTime += totalTypingTime;
-                    getWidgetMicroMetrics(e.target).typingSpeed += totalTypingTime / charsTyped;
-                    getWidgetMicroMetrics(e.target).typingVariance = calculateVariance(getWidgetMicroMetrics(e.target).typingIntervals);
-                }
-                else {
-                    typingLatency = e.timeStamp - focusTime;
-                }
-                getWidgetMicroMetrics(e.target).typingLatency += typingLatency;
-                logMetrics(getWidgetMicroMetrics(e.target));
-                charsTyped = 0;
-                alreadyTyped = false;
-                typingIntervals = [];
-                lastKeypressTimestamp = 0;
-                charsDeleted = 0;
-                typingLatency = null;
-                break;
-            default:
-                null
-        }
-    });
+    totalTypingTime = e.timeStamp - (focusTime + typingLatency);
+    getWidgetMicroMetrics(e.target).totalTypingTime += totalTypingTime;
+    getWidgetMicroMetrics(e.target).typingSpeed += totalTypingTime / charsTyped;
+    getWidgetMicroMetrics(e.target).typingVariance = calculateVariance(getWidgetMicroMetrics(e.target).typingIntervals);
+}
+else {
+    typingLatency = e.timeStamp - focusTime;
+}
+getWidgetMicroMetrics(e.target).typingLatency += typingLatency;
+logMetrics(getWidgetMicroMetrics(e.target));
+charsTyped = 0;
+alreadyTyped = false;
+typingIntervals = [];
+lastKeypressTimestamp = 0;
+charsDeleted = 0;
+typingLatency = null;
+break;
+default:
+null
+}
+});
 
 function calculateVariance(intervals) {
     if (intervals.length == 0) {
@@ -145,7 +146,9 @@ SelectMetrics();
 
 window.onblur = function() {
     Object.keys(widgets).forEach(function(key) {
-        console.log(widgets[key]);
-        $.post(capturerServerURL, widgets[key]);
+        if (!widgets[key].sent) {
+            $.post(capturerServerURL, widgets[key]);
+            widgets[key].sent = true;
+        }
     });
 };
