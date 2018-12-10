@@ -10,7 +10,7 @@ function getWidgetMicroMetrics(anElement) {
         metricId = anElement.getAttribute("data-metric-id");
     }
     if (!widgets[metricId]) {
-        widgets[metricId] = {"id": metricId, "url": window.location.href, "authorId": authorId, "volunteer": volunteer};
+        widgets[metricId] = {"id": metricId, "url": window.location.href, "authorId": authorId, "volunteer": volunteer, "interactions": 0};
         if (anElement.tagName.toLowerCase() == "input") {
             widgets[metricId] = Object.assign({}, widgets[metricId], {"widgetType": "TextInput", "typingLatency": 0, "typingSpeed": 0,
                 "typingVariance": null,"totalTypingTime": 0, "correctionAmount": 0, "mouseTraceLength": 0, "typingIntervals": []});
@@ -27,6 +27,7 @@ function logMetrics(metrics) {
     metrics["timestamp"] = new Date().getTime();
     console.log(metrics);
     metrics["sent"] = false;
+    metrics["interactions"] += 1;
     $("title").text(metrics.id);
 }
 
