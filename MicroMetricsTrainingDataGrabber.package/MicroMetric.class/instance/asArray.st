@@ -5,7 +5,10 @@ asArray
 	| values metricKeys |
 	values := OrderedCollection new.
 	metricKeys := self valuesDictionary keys asOrderedCollection.
-	metricKeys removeAll: #(widgetType authorId volunteer).
+	metricKeys
+		removeAll: #(widgetType authorId volunteer);
+		remove: #mouseTraceLength ifAbsent: [  ];
+		remove: #interactions ifAbsent: [  ].
 	metricKeys do: [ :key | values add: (self valuesDictionary at: key) asNumber ].
 	self ratings isNotEmpty
 		ifTrue: [ values add: self consolidatedRating asNumber ].

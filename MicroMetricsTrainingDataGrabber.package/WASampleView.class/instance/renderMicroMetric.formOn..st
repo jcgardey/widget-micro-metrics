@@ -5,7 +5,9 @@ renderMicroMetric: microMetric formOn: html
 				strong: microMetric id;
 				space;
 				text: microMetric timestamp asFileNameCompatibleString.
-			self renderRemoveMetric: microMetric linkOn: html ];
+			self
+				renderInspectMetric: microMetric linkOn: html;
+				renderRemoveMetric: microMetric linkOn: html ];
 		tbsPanelBody: [ html textInput callback: [ :value | self addRating: value to: microMetric ].
 			microMetric ratings
 				do: [ :rating | 

@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "JulianGrigera 12/11/2018 09:04",
+	"super" : "WAComponent",
+	"category" : "MicroMetricsTrainingDataGrabber-Frontend",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"microMetric"
+	],
+	"name" : "WAMicroMetricView",
+	"type" : "normal"
+}

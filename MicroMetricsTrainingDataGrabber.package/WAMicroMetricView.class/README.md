@@ -1,0 +1,1 @@
+View for single metric
