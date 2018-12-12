@@ -1,0 +1,14 @@
+{
+	"commentStamp" : "JulianGrigera 12/12/2018 14:12",
+	"super" : "Object",
+	"category" : "MicroMetricsTrainingDataGrabber-Service",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"id",
+		"metrics"
+	],
+	"name" : "Sample",
+	"type" : "normal"
+}

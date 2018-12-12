@@ -1,3 +1,3 @@
 controlling
-renderSample: sampleId
-	self call: (WASampleView on: sampleId)
+renderSample: aSample
+	self call: (WASampleView on: aSample)

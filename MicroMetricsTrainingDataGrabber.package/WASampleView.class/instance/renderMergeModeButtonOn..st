@@ -7,4 +7,9 @@ renderMergeModeButtonOn: html
 	html anchor
 		class: 'btn btn-default';
 		callback: [ self switchMergeMode ];
-		with: labelText
+		with: labelText.
+	self sample inConflict
+		ifTrue: [ html space.
+			html tbsLabel
+				beWarning;
+				with: sample conflictingMetricsCount greaseString , ' a consolidar' ]

@@ -1,5 +1,5 @@
 instance creation
-on: aSampleIdString
+on: aSample
 	^ self new
-		sampleId: aSampleIdString;
+		sample: aSample;
 		yourself

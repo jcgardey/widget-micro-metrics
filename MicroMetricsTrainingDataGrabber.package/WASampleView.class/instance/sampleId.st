@@ -1,3 +1,3 @@
 accessing
 sampleId
-	^ sampleId
+	^ self sample id
