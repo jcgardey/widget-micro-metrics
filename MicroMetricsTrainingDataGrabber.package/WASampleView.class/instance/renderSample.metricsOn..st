@@ -1,8 +1,8 @@
 rendering
-renderSample: sampleId metrics: sampleMetrics on: html
-	html heading level5 with: sampleId.
+renderSample: aSample metricsOn: html
+	html heading level4 with: 'Metrics List'.
 	html
-		tbsPanelGroup: [ sampleMetrics
+		tbsPanelGroup: [ aSample metricsByTimestamp
 				do: [ :microMetric | 
 					html tbsPanel beDefault
 						class: 'panel-danger' if: self mergeMode & microMetric inConflict;
