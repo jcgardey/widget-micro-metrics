@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "author": "LIFIA",
+  "name": "Recorder Tool",
+  "version": "1.0",
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": [
+      "node_modules/webextension-polyfill/dist/browser-polyfill.js",
+      "node_modules/rrweb/dist/rrweb.js",
+      "content_scripts/RecorderModal.js",
+      "content_scripts/recorder.js"
+    ],
+    "css": [
+      "content_scripts/css/style.css"
+    ]
+  }],
+  "background":{
+    "scripts": [
+      "node_modules/webextension-polyfill/dist/browser-polyfill.js",
+      "node_modules/axios/dist/axios.js",
+      "background/main.js"
+    ]
+  },
+  "browser_action": {
+    "default_title": "Recorder",
+    "browser_style": true,
+    "default_icon": {
+       "64": "resources/play_icon.png"
+    }
+  },
+  "permissions": [
+    "<all_urls>",
+    "tabs"
+  ]
+}
