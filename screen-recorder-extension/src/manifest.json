@@ -8,7 +8,9 @@
     "js": [
       "node_modules/webextension-polyfill/dist/browser-polyfill.js",
       "node_modules/rrweb/dist/rrweb.js",
+      "node_modules/jquery/dist/jquery.js",
       "content_scripts/RecorderModal.js",
+      "content_scripts/events_logger.js",
       "content_scripts/recorder.js"
     ],
     "css": [
@@ -19,6 +21,7 @@
     "scripts": [
       "node_modules/webextension-polyfill/dist/browser-polyfill.js",
       "node_modules/axios/dist/axios.js",
+      "node_modules/jquery/dist/jquery.js",
       "background/main.js"
     ]
   },

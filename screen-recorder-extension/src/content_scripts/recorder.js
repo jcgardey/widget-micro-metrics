@@ -11,6 +11,7 @@ ScreenRecorder.prototype.toggleRecording = function () {
     else {
         this.stopRecording();
         this.recording = false;
+        this.eventLogger.stopLogging();
         browser.runtime.sendMessage({"message": "stop"});
     }
 }
@@ -26,7 +27,8 @@ ScreenRecorder.prototype.startRecording = function () {
             me.events.push(event);
         },
     });
-
+    this.eventLogger = new EventLogger(this.screencastName, "http://localhost:1701/micrometrics/metrics/");
+    this.eventLogger.startLogging();
 };
 
 ScreenRecorder.prototype.setUp = function () {
@@ -34,7 +36,6 @@ ScreenRecorder.prototype.setUp = function () {
     const me = this;
     function save() {
         if (me.events.length > 0) {
-            console.log('events pushed:', me.events);
             browser.runtime.sendMessage({"message":"save", "data":{"events": me.events, "screencastName": me.screencastName,
                     "screencastId": me.screencastId, "url": document.location.href}});
             me.events = [];

@@ -32,6 +32,14 @@ browser.runtime.onMessage.addListener(function (request) {
     }
 });
 
+browser.runtime.onMessage.addListener(function (request) {
+    if (request.message == "sendLogs") {
+        Object.keys(request.logs).forEach(function (key) {
+            $.post(request.url, request.logs[key]);
+        });
+    }
+});
+
 
 function getCurrentTab (callback) {
     try {
