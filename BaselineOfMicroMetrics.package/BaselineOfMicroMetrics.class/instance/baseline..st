@@ -11,5 +11,5 @@ baseline: spec
 				neoCSV: spec.
 			spec
 				package: 'MicroMetricsTrainingDataGrabber'
-				with: [ spec requires: #('Seaside3' 'Bootstrap' 'Teapot''Voyage') ].
+				with: [ spec requires: #('Seaside3' 'Bootstrap' 'Teapot' 'Voyage' 'NeoCSV') ].
 			spec postLoadDoIt: #postLoadActions ]
