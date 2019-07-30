@@ -7,7 +7,8 @@ baseline: spec
 				seaside: spec;
 				bootstrap: spec;
 				teapot: spec;
-				voyage: spec.
+				voyage: spec;
+				neoCSV: spec.
 			spec
 				package: 'MicroMetricsTrainingDataGrabber'
 				with: [ spec requires: #('Seaside3' 'Bootstrap' 'Teapot''Voyage') ].
