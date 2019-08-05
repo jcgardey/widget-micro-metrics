@@ -8,9 +8,9 @@ Depends on
 ```smalltalk
 "Dependencies"
 Gofer it
-    smalltalkhubUser: 'zeroflag' project: 'Teapot';
-    configuration;
-    loadStable.
+   smalltalkhubUser: 'zeroflag' project: 'Teapot';
+   configuration;
+   loadStable.
 Gofer it
    smalltalkhubUser: 'SvenVanCaekenberghe' project: 'Neo';
    configurationOf: 'NeoCSV';
@@ -20,10 +20,10 @@ Metacello new
    repository: 'github://SeasideSt/Seaside:master/repository';
    load.
 Metacello new 
-	repository: 'github://pharo-nosql/voyage/mc';
-	baseline: 'Voyage';
-	onConflictUseLoaded;
-	load: 'mongo tests'.
+   repository: 'github://pharo-nosql/voyage/mc';
+   baseline: 'Voyage';
+   onConflictUseLoaded;
+   load: 'mongo tests'.
 Metacello new
    configuration:'Bootstrap';
    repository: 'github://astares/Seaside-Bootstrap:master/src';
@@ -32,9 +32,9 @@ Metacello new
 
 "Packages"
 (IceRepositoryCreator new
-  	url: 'git@github.com:juancruzgardey/widget-micro-metrics.git';
-  	createRepository) updatePackage: #MicroMetrics.
+   url: 'git@github.com:juancruzgardey/widget-micro-metrics.git';
+   createRepository) updatePackage: #MicroMetrics.
 (IceRepositoryCreator new
-  	url: 'git@github.com:juancruzgardey/widget-micro-metrics.git';
-  	createRepository) updatePackage: #MicroMetricsTrainingDataGrabber.
+   url: 'git@github.com:juancruzgardey/widget-micro-metrics.git';
+   createRepository) updatePackage: #MicroMetricsTrainingDataGrabber.
 ```
