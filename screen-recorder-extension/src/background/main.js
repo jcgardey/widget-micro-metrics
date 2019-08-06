@@ -22,9 +22,7 @@ browser.runtime.onMessage.addListener(function (request) {
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "save") {
         const data = JSON.stringify(request.data);
-        axios.post('http://localhost:5000/api/logger/rrweb', {
-            method: 'post',
-            data,
+        axios.post('http://localhost:1701/micrometrics/screencast',data, {
             headers: {
                 'Content-Type': 'application/json',
             }
