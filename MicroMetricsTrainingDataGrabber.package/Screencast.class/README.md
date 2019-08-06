@@ -1,0 +1,1 @@
+I represent a screencast of a web page
