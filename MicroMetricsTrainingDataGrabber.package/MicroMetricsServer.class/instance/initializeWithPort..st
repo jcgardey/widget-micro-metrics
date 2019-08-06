@@ -21,5 +21,4 @@ initializeWithPort: aPort
 						headerName: 'Access-Control-Allow-Origin' value: '*';
 						body: (self findScreencast: (request at: #id)) events ];
 		output: #json.
-	self setupDatabase.
 	server start
