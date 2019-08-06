@@ -27,7 +27,7 @@ ScreenRecorder.prototype.startRecording = function () {
             me.events.push(event);
         },
     });
-    this.eventLogger = new EventLogger(this.screencastName, "http://localhost:1701/micrometrics/metrics/");
+    this.eventLogger = new EventLogger(this.screencastId, this.screencastName, "http://localhost:1701/micrometrics/metrics/");
     this.eventLogger.startLogging();
 };
 

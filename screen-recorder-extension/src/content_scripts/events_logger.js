@@ -1,4 +1,5 @@
-function EventLogger(volunteerName, serverURL) {
+function EventLogger(screencastId, volunteerName, serverURL) {
+    this.screencastId = screencastId;
     this.volunteerName = volunteerName;
     this.serverURL = serverURL;
     this.widgets = {};
@@ -237,5 +238,5 @@ EventLogger.prototype.startLogging = function () {
 EventLogger.prototype.stopLogging = function () {
     this.tearDownTextInput();
     console.log(this.widgets);
-    browser.runtime.sendMessage({"message": "sendLogs", "url": this.serverURL, "logs": this.widgets});
+    browser.runtime.sendMessage({"message": "sendLogs", "url": this.serverURL, "logs": {"metrics": this.widgets, "screencastId": this.screencastId}});
 };

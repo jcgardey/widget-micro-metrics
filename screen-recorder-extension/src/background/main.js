@@ -32,9 +32,15 @@ browser.runtime.onMessage.addListener(function (request) {
 
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "sendLogs") {
+        axios.post('http://localhost:1701/micrometrics/metrics',request.logs, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        /**
         Object.keys(request.logs).forEach(function (key) {
             $.post(request.url, request.logs[key]);
-        });
+        });*/
     }
 });
 
