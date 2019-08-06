@@ -1,3 +1,3 @@
 accessing
 findScreencast: aString
-	^ (Screencast selectOne: [ :screencast | screencast id = aString ]) events.
+	^ Screencast selectOne: [ :screencast | screencast id = aString ].

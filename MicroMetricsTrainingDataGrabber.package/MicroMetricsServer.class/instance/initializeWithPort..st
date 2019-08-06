@@ -8,7 +8,7 @@ initializeWithPort: aPort
 		GET: '/micrometrics/metricsData' -> [ :request | TeaResponse ok body: self metricsCSVData ];
 		POST:
 			'/micrometrics/metrics/'
-				-> [ :request | 
+				-> [ :request |
 					self captureMetricFrom: request.
 					TeaResponse ok
 						headerName: 'Access-Control-Allow-Origin' value: '*';
@@ -19,7 +19,7 @@ initializeWithPort: aPort
 				-> [ :request | 
 					TeaResponse ok
 						headerName: 'Access-Control-Allow-Origin' value: '*';
-						body: (self findScreencast: (request at: #id)) ];
+						body: (self findScreencast: (request at: #id)) events ];
 		output: #json.
 	self setupDatabase.
 	server start
