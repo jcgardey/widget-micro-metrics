@@ -1,7 +1,9 @@
 tests-initialization
 testCaptureMetricFrom
 	ZnClient new
-		url:'http://localhost:', self portForTesting printString, '/micrometrics/metrics/';
+		url:
+			'http://localhost:' , self portForTesting printString
+				, '/micrometrics/metrics/';
 		formAt: 'widgetType' put: 'TextInput';
 		formAt: 'id' put: 'awdas01351021';
 		formAt: 'authorId' put: '1';
@@ -16,4 +18,4 @@ testCaptureMetricFrom
 		formAt: 'correctionAmount' put: '6';
 		post.
 	self assert: server metrics size equals: 1.
-	server metrics first remove
+	self assert: server metrics first id equals: 'awdas01351021'

@@ -1,3 +1,5 @@
 running
 setUp
-	server := MicroMetricsServer onPort: self portForTesting
+	super setUp.
+	server := MicroMetricsServer onPort: self portForTesting.
+	server storeInMemory
