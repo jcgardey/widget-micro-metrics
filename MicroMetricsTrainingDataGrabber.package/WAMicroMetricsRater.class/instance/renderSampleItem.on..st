@@ -2,7 +2,7 @@ rendering
 renderSampleItem: sample on: html
 	html tbsLinkifyListGroupItem
 		callback: [ self renderSample: sample ];
-		with: [ html text: sample id.
+		with: [ html text: sample screencastName.
 			sample inConflict
 				ifTrue: [ html space.
 					html tbsLabel

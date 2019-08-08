@@ -5,5 +5,6 @@ initialize
 		addLibrary: JQUiDeploymentLibrary;
 		addLibrary: TBSDeploymentLibrary;
 		addLibrary: TBSJasnyDeploymentLibrary;
+		addLibrary: Rrweb;
 		exceptionHandler: WADebugErrorHandler;
 		preferenceAt: #resourceBaseUrl put: 'http://localhost:8080'
