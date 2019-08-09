@@ -7,4 +7,4 @@ initialize
 		addLibrary: TBSJasnyDeploymentLibrary;
 		addLibrary: Rrweb;
 		exceptionHandler: WADebugErrorHandler;
-		preferenceAt: #resourceBaseUrl put: 'http://localhost:8080'
+		preferenceAt: #resourceBaseUrl put: ('http://localhost:', MicroMetricsScriptsRunner new deploymentPort asString)
