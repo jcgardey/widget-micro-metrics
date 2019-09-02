@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "JulianGrigera 8/6/2019 13:35",
+	"super" : "MicroMetricsStorage",
+	"category" : "MicroMetricsTrainingDataGrabber-Service",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"metrics"
+	],
+	"name" : "MicroMetricsMemoryStorage",
+	"type" : "normal"
+}

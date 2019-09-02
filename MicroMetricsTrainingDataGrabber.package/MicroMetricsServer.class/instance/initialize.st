@@ -1,7 +1,7 @@
 initialization
 initialize
 	super initialize.
-	metrics := OrderedCollection new.
+	self storeInVoyage.
 	grabbers := Dictionary new
 		at: #TextInput put: TextInputGrabber new;
 		at: #SelectInput put: SelectInputGrabber new;

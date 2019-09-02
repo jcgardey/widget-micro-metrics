@@ -1,0 +1,1 @@
+Storage strategy for MicroMetricsServer

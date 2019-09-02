@@ -1,3 +1,3 @@
-accessing
+storage
 metrics
-	^ metrics
+	^ self storage metrics

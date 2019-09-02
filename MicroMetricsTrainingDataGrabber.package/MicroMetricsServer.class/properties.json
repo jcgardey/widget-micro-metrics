@@ -1,5 +1,5 @@
 {
-	"commentStamp" : "JulianGrigera 10/29/2018 14:15",
+	"commentStamp" : "JulianGrigera 8/6/2019 13:29",
 	"super" : "Object",
 	"category" : "MicroMetricsTrainingDataGrabber-Service",
 	"classinstvars" : [
@@ -10,7 +10,8 @@
 	"instvars" : [
 		"server",
 		"grabbers",
-		"metrics"
+		"metrics",
+		"storage"
 	],
 	"name" : "MicroMetricsServer",
 	"type" : "normal"
