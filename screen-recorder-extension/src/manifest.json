@@ -10,8 +10,8 @@
       "node_modules/rrweb/dist/rrweb.js",
       "node_modules/jquery/dist/jquery.js",
       "content_scripts/RecorderModal.js",
-      "content_scripts/events_logger.js",
-      "content_scripts/recorder.js"
+      "content_scripts/MicroMetriclogger.js",
+      "content_scripts/ScreenRecorder.js"
     ],
     "css": [
       "content_scripts/css/style.css"
