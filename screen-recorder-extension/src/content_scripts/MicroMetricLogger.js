@@ -85,7 +85,6 @@ MicroMetricLogger.prototype.logWidget = function (widget) {
     widgetLogs["timestamp"] = new Date().getTime();
     console.log(widgetLogs);
     widgetLogs["sent"] = false;
-    widgetLogs["interactions"] += 1;
 
     var metricBar = document.createElement("div");
     metricBar.id = "micro-metric-id";
@@ -441,8 +440,7 @@ MouseDwellTime.prototype.onMouseMove = function (event) {
     var now = event.timeStamp;
     if (this.lastWidget) {
         var dwellTime = now - this.lastTimestamp;
-        console.log("Dwell time ", dwellTime, " on " ,this.lastWidget);
-        this.microMetricLogger.getWidgetLogs(this.lastWidget).dwellTime += dwellTime;
+        this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
     }
     this.lastWidget = this.currentWidget;
     this.lastTimestamp = now;
