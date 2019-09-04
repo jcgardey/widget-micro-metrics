@@ -1,3 +1,3 @@
 uploaded
 selectorsToInclude
-	^ #(RrwebJs RrwebCss)
+	^ #(RrwebJs RrwebCss ScreencastReplayerJs)

@@ -22,6 +22,7 @@ function focusMicroMetric () {
   }
 }
     $(document).ready(function () {
+        if ($("#screencast_id").val()) {
             $.ajax({
               url: ''http://localhost:1701/micrometrics/screencast/'' + $("#screencast_id").val(),
               method: ''get'',
@@ -37,6 +38,6 @@ function focusMicroMetric () {
                 setInterval(focusMicroMetric, 400);
               }
             });
-
+        }
     });
 '
