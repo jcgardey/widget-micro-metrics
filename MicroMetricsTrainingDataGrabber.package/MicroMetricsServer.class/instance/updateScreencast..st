@@ -8,6 +8,6 @@ updateScreencast: request
 		ifNil: [ screencastFound := Screencast
 				id: (jsonBody at: 'screencastId')
 				name: (jsonBody at: 'screencastName')
-				events: (jsonBody at: 'events') ]
-		ifNotNil: [ screencastFound addEvents: (jsonBody at: 'events') ].
+				events: (jsonBody at: 'events') asOrderedCollection ]
+		ifNotNil: [ screencastFound addEvents: (jsonBody at: 'events') asOrderedCollection ].
 	screencastFound save.

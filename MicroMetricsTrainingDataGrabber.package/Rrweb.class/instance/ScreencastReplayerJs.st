@@ -34,9 +34,9 @@ function focusMicroMetric () {
                     autoPlay: false,
                   },
                 });
+                setInterval(focusMicroMetric, 400);
               }
             });
 
-            setInterval(focusMicroMetric, 400);
     });
 '
