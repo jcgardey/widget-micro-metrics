@@ -1,3 +1,3 @@
 deployment
 stopServer
-	ZnZincServerAdaptor startOn: self deploymentPort.
+	ZnZincServerAdaptor stop.
