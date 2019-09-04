@@ -9,7 +9,7 @@ renderBodyOn: html
 				with: [ self
 						renderRaterInputOn: html;
 						renderSample: self sample listOn: html ] ]
-		mediumSize: 4.
+		mediumSize: 3.
 	html tbsColumn
 		id: #replayer;
-		mediumSize: 8
+		mediumSize: 9
