@@ -1,6 +1,6 @@
 rendering
 renderContentOn: html
 	html
-		tbsContainer: [ self
+		tbsContainerFluid: [ self
 				renderHeadingOn: html;
 				renderBodyOn: html ]

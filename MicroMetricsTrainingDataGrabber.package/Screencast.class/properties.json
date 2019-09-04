@@ -1,0 +1,16 @@
+{
+	"commentStamp" : "JuanCruzGardey 8/6/2019 10:54",
+	"super" : "Object",
+	"category" : "MicroMetricsTrainingDataGrabber-Service",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"id",
+		"screencastName",
+		"events",
+		"metrics"
+	],
+	"name" : "Screencast",
+	"type" : "normal"
+}

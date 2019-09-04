@@ -1,0 +1,3 @@
+deployment
+stopServer
+	ZnZincServerAdaptor stop.

@@ -1,3 +1,3 @@
 accessing
 sampleId
-	^ self sample id
+	^ self sample screencastName
