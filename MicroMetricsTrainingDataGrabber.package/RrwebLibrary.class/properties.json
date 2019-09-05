@@ -4,8 +4,10 @@
 	"category" : "MicroMetricsTrainingDataGrabber-Library",
 	"classinstvars" : [ ],
 	"pools" : [ ],
-	"classvars" : [ ],
+	"classvars" : [
+		"screencastBaseUrl"
+	],
 	"instvars" : [ ],
-	"name" : "Rrweb",
+	"name" : "RrwebLibrary",
 	"type" : "normal"
 }

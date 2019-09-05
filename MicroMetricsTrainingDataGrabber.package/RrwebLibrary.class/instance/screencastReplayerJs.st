@@ -1,5 +1,5 @@
 uploaded
-ScreencastReplayerJs
+screencastReplayerJs
 	^ '
 var lastValue = null;
 function focusMicroMetric () {
@@ -11,10 +11,10 @@ function focusMicroMetric () {
         var allStrong = document.querySelectorAll("div.panel-heading strong");
         for(i=0; i < allStrong.length; i++) {
           if (allStrong[i].textContent == micrometricId) {
-            allStrong[i].parentNode.style.border = "2px solid red";
+            allStrong[i].parentNode.classList.add("currentMetric");;
           }
           else if (allStrong[i].textContent == lastValue) {
-            allStrong[i].parentNode.style.border = "";
+            allStrong[i].parentNode.classList.remove("currentMetric");
           }
         }
         lastValue = micrometricId;
@@ -24,7 +24,7 @@ function focusMicroMetric () {
     $(document).ready(function () {
         if ($("#screencast_id").val()) {
             $.ajax({
-              url: ''http://localhost:1701/micrometrics/screencast/'' + $("#screencast_id").val(),
+              url: ''',self screencastBaseUrl,'/micrometrics/screencast/'' + $("#screencast_id").val(),
               method: ''get'',
               dataType: ''json'',
               success: function (response) {

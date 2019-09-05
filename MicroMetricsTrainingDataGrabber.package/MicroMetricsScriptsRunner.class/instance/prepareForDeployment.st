@@ -1,8 +1,11 @@
-as yet unclassified
+api
 prepareForDeployment
-	self 
+	RrwebLibrary setProductionBaseUrl.
+	self
 		setupDatabase;
 		setDeploymentResourceBaseUrl;
 		stopServer;
 		startServer.
-	MicroMetricsServer resetInstance; instance.
+	MicroMetricsServer
+		resetInstance;
+		instance

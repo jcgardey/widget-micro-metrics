@@ -1,0 +1,3 @@
+uploaded
+setProductionBaseUrl
+	screencastBaseUrl := self productionScreencastBaseUrl

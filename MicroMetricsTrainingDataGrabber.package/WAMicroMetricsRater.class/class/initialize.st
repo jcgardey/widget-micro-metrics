@@ -5,6 +5,7 @@ initialize
 		addLibrary: JQUiDeploymentLibrary;
 		addLibrary: TBSDeploymentLibrary;
 		addLibrary: TBSJasnyDeploymentLibrary;
-		addLibrary: Rrweb;
+		addLibrary: RrwebLibrary;
+		addLibrary: MicrometricsRaterLibrary;
 		exceptionHandler: WADebugErrorHandler;
 		preferenceAt: #resourceBaseUrl put: ('http://localhost:', MicroMetricsScriptsRunner new deploymentPort asString)
