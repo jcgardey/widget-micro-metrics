@@ -5,7 +5,7 @@ prepareForDevelopment
 		setupDatabase;
 		setDevelopmentResourceBaseUrl;
 		stopServer;
-		startServer.
+		startDevelopmentServer.
 	MicroMetricsServer
 		resetInstance;
 		instance

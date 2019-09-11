@@ -7,4 +7,5 @@ removeMetric: aMicroMetric
 			stream << aMicroMetric id.
 			stream << '? Esta acción no se puede deshacer.' ].
 	(self confirm: message)
-		ifTrue: [ self microMetrics remove: aMicroMetric ]
+		ifTrue: [ self sample removeMetric: aMicroMetric.
+			MicroMetricsServer instance removeMetric: aMicroMetric ]

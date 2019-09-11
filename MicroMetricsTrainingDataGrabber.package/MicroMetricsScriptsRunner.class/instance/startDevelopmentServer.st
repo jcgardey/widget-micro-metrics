@@ -1,0 +1,3 @@
+deployment
+startDevelopmentServer
+	ZnZincServerAdaptor startOn: self developmentPort
