@@ -9,7 +9,7 @@ function WidgetLogs () {
     "exitAndBack": 0,
 		"inputSwitches": 0,
     "mouseTraceLength": 0,
-      "timestamp": new Date().getTime(),
+    "timestamp": new Date().getTime(),
     "mouseDwellTime": 0
   }
 }
@@ -36,8 +36,13 @@ TextInputLogs.prototype = Object.create(WidgetLogs.prototype);
 function SelectInputLogs() {
   WidgetLogs.call(this);
   this.metrics = Object.assign({}, this.metrics, {
-                "widgetType": "SelectInput", "clicks": 0, "keystrokes": 0,
-                "optionsSelected": 0, "focusTime": 0, "optionsDisplayTime": 0})
+                "widgetType": "SelectInput",
+                "clicks": 0,
+                "keystrokes": 0,
+                "optionsSelected": 0,
+                "focusTime": 0,
+                "optionsDisplayTime": 0
+              })
 }
 SelectInputLogs.prototype = Object.create(WidgetLogs.prototype);
 
@@ -136,7 +141,12 @@ MicroMetricLogger.prototype.stopLogging = function () {
   this.mouseDwellTime.tearDown();
   this.hoverAndBack.tearDown();
   this.inputSwitch.tearDown();
+  this.interactions.tearDown();
+  document.querySelectorAll('[data-metric-id]').forEach(function(element){element.removeAttribute('data-metric-id')});
+  console.log(this.widgets);
   browser.runtime.sendMessage({"message": "sendLogs", "url": this.serverURL, "logs": {"metrics": this.widgets, "screencastId": this.screencastId}});
+  this.screencastId = null;
+  this.volunteerName = null;
 }
 
 

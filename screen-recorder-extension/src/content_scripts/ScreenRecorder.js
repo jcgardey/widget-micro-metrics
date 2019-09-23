@@ -6,7 +6,10 @@ function ScreenRecorder () {
 
 ScreenRecorder.prototype.toggleRecording = function () {
     if (!this.recording) {
-        modal.show();
+        //modal.show();
+        this.screencastName = this.getNextID();
+        console.log(this.screencastName);
+        this.startRecording();
     }
     else {
         this.stopRecording();
@@ -15,6 +18,14 @@ ScreenRecorder.prototype.toggleRecording = function () {
         browser.runtime.sendMessage({"message": "stop"});
     }
 }
+
+ScreenRecorder.prototype.getNextID = function () {
+    var firstPart = (Math.random() * 46656) | 0;
+    var secondPart = (Math.random() * 46656) | 0;
+    firstPart = ("000" + firstPart.toString(36)).slice(-3);
+    secondPart = ("000" + secondPart.toString(36)).slice(-3);
+    return firstPart + secondPart;
+};
 
 ScreenRecorder.prototype.startRecording = function () {
     this.events = [];
@@ -46,7 +57,7 @@ ScreenRecorder.prototype.setUp = function () {
 
 var screenRecorder = new ScreenRecorder();
 screenRecorder.setUp();
-var modal = new RecorderModal(screenRecorder);
+//var modal = new RecorderModal(screenRecorder);
 
 browser.runtime.onMessage.addListener((request, sender) => {
     screenRecorder.toggleRecording();
