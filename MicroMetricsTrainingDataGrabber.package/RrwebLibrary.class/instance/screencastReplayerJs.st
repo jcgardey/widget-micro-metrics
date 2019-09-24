@@ -18,6 +18,7 @@ function focusMicroMetric () {
           }
         }
         lastValue = micrometricId;
+		  $("button.svelte-1cgfpn0")[0].click();
     }
   }
 }
