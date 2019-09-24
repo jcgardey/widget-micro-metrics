@@ -2,7 +2,7 @@ rendering
 renderMicroMetric: microMetric formOn: html
 	html
 		tbsPanelHeading: [ self renderMicroMetric: microMetric headingOn: html ];
-		tbsPanelBody: [ html textInput callback: [ :value | self addRating: value to: microMetric ].
+		tbsPanelBody: [ self renderMicroMetric: microMetric rateInputOn: html.
 			microMetric ratings
 				do: [ :rating | 
 					html

@@ -14,4 +14,6 @@ raterCss
 	.currentMetric .panel-body input{
 		border: 1px solid rgb(187, 182, 7) !important;
 	}
+	.ratingTextInput, .ratingRadio{display:none}
+	.ratingRadioLabel.unselected{opacity:0.4}
 	'

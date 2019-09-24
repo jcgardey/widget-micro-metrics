@@ -1,3 +1,3 @@
 accessing
 selectorsToInclude
-	^ #(raterCss)
+	^ #(raterCss raterJs)
