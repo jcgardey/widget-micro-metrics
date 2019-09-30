@@ -8,5 +8,4 @@ renderHeadingOn: html
 						with: 'All Metrics' ].
 			html tbsBreadcrumbSection
 				beActive;
-				with: self sampleId ].
-	html paragraph: [ self renderMergeModeButtonOn: html ]
+				with: self sampleId ]

@@ -9,7 +9,4 @@ renderMergeModeButtonOn: html
 		callback: [ self switchMergeMode ];
 		with: labelText.
 	self sample inConflict
-		ifTrue: [ html space.
-			html tbsLabel
-				beWarning;
-				with: sample conflictingMetricsCount greaseString , ' a consolidar' ]
+		ifTrue: [ self renderConflictsCountOn: html ]

@@ -1,6 +1,10 @@
 uploaded
 raterCss
 	^ '
+	#metricsRaterColumn{
+		height:650px;
+		overflow:auto;
+	}
 	.currentMetric{
        border: 2px solid rgb(244, 244, 52) !important;
        background: rgb(253, 255, 134) !important;

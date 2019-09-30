@@ -1,5 +1,12 @@
 rendering
 renderMicroMetric: microMetric rateInputOn: html
+	html hiddenInput class: #micrometricHiddenId; value: microMetric id.
+	html tbsLabel
+		beSuccessIf: microMetric widgetType = 'TextInput';
+		beInfoIf: microMetric widgetType = 'SelectInput';
+		title: microMetric widgetType;
+		with: microMetric widgetType first.
+	html space.
 	1 to: 4 do:
 		[ :aNumber | self renderRatingRadioValue: aNumber for: microMetric on: html ].
 	html textInput
