@@ -93,6 +93,7 @@ MicroMetricLogger.prototype.logWidget = function (widget) {
 
     var metricBar = document.createElement("div");
     metricBar.id = "micro-metric-id";
+    metricBar.style.display = "none";
     metricBar.style.position = "fixed";
     metricBar.style.zIndex = "9999";
     metricBar.style.right = "30px";
@@ -664,4 +665,3 @@ class Trace {
       return red + blue;
     }
 }
-
