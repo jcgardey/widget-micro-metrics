@@ -20,8 +20,12 @@ function focusMicroMetric () {
         }
         lastValue = micrometricId;
 		  $("button.svelte-1cgfpn0")[0].click();
-iframe.contentDocument.getElementsByTagName("input")[0].focus()
-    }
+  		  iframe.contentDocument.querySelectorAll("input,textarea").forEach(function(element){
+        if(element === document.activeElement) {
+            element.blur();
+        }
+    });
+  }
   }
 }
 
@@ -32,33 +36,35 @@ function scrollToSmoothly(pos, time) {
   /*Time is only applicable for scrolling upwards*/
   /*Code written by hev1*/
   /*pos is the y-position to scroll to (in pixels)*/
+  var raterColumn = document.getElementById("metricsRaterColumn");
+  var currentPos = raterColumn.scrollTop;
+  var alreadyVisible = (pos > currentPos && (currentPos + raterColumn.clientHeight > pos));
   if (isNaN(pos)) {
     throw "Position must be a number";
   }
   if (pos < 0) {
     throw "Position can not be negative";
   }
-  var raterColumn = document.getElementById("metricsRaterColumn");
-  var currentPos = raterColumn.scrollTop;
-  if (currentPos < pos) {
-    var t = 10;
-    for (let i = currentPos; i <= pos; i += 10) {
-      t += 10;
-      setTimeout(function() {
-        raterColumn.scrollTo(0, i);
-      }, t / 2);
-    }
-  } else {
-    time = time || 2;
-    var i = currentPos;
-    var x;
-    x = setInterval(function() {
-      raterColumn.scrollTo(0, i);
-      i -= 10;
-      if (i <= pos) {
-        clearInterval(x);
+  if (!alreadyVisible)  {
+    if (currentPos < pos) {
+      var t = 10;
+      for (let i = currentPos; i <= pos; i += 10) {
+        t += 10;
+        setTimeout(function() { raterColumn.scrollTo(0, i);}, t / 2);
       }
-    }, time);
+    } 
+    else {
+      time = time || 2;
+      var i = currentPos;
+      var x;
+      x = setInterval(function() {
+        raterColumn.scrollTo(0, i);
+        i -= 10;
+        if (i <= pos) {
+          clearInterval(x);
+        }
+      }, time);
+    }
   }
 }
 
