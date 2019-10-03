@@ -46,13 +46,22 @@ function SelectInputLogs() {
 }
 SelectInputLogs.prototype = Object.create(WidgetLogs.prototype);
 
+function AnchorLogs() {
+  WidgetLogs.call(this);
+  this.metrics = Object.assign({}, this.metrics, {
+                "widgetType": "Anchor",
+                "misclicks": 0,
+              })
+}
+AnchorLogs.prototype = Object.create(WidgetLogs.prototype);
+
 function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.screencastId = screencastId;
     this.volunteerName = volunteerName;
     this.serverURL = serverURL;
     this.widgets = {};
     this.nextID = 0;
-    this.loggers = { input: TextInputLogs, select: SelectInputLogs};
+    this.loggers = { input: TextInputLogs, select: SelectInputLogs, a: AnchorLogs};
 
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
@@ -62,6 +71,7 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.mouseTraceLength = new MouseTraceLength(this);
     this.mouseDwellTime = new MouseDwellTime(this);
     this.hoverAndBack = new HoverAndBack(this);
+    this.misClick = new MisClick(this);
     this.inputSwitch = new InputSwitch(this);
     this.interactions = new Interactions(this);
 }
@@ -128,6 +138,7 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.mouseTraceLength.setUp();
     this.mouseDwellTime.setUp();
     this.hoverAndBack.setUp();
+    this.misClick.setUp();
     this.inputSwitch.setUp();
     this.interactions.setUp();
 }
@@ -141,6 +152,7 @@ MicroMetricLogger.prototype.stopLogging = function () {
   this.mouseTraceLength.tearDown();
   this.mouseDwellTime.tearDown();
   this.hoverAndBack.tearDown();
+  this.misClick.tearDown();
   this.inputSwitch.tearDown();
   this.interactions.tearDown();
   document.querySelectorAll('[data-metric-id]').forEach(function(element){element.removeAttribute('data-metric-id')});
@@ -192,7 +204,7 @@ function withinWidgetSurroundings(point, widget) {
 
 function MicroMetric(logger) {
   this.microMetricLogger = logger;
-  this.targetElementsSelector = "input, select";
+  this.targetElementsSelector = "input, select, a";
 }
 
 MicroMetric.prototype.getTargetWidget = function (point) {
@@ -485,6 +497,59 @@ Interactions.prototype.tearDown = function () {
   removeEventListener(this.targetElementsSelector, "focus", this.onFocus);
 }
 
+class MisClick extends MicroMetric {
+    constructor(logger) {
+      	super(logger);
+        this._toleranceDistance = 500;
+        this.handler = this.handler.bind(this);
+    }
+
+    setUp() {
+      document.addEventListener("click", this.handler);
+    }
+
+    tearDown() {
+      document.removeEventListener("click", this.handler);
+    }
+
+    toleranceDistance(){
+      return this._toleranceDistance;
+    }
+
+    handler(event){
+      var element = event.target;
+      if (element.tagName != "A" && element.tagName != "INPUT" && element.tagName != "BUTTON") {
+        for(let child of element.children){
+          if(child.tagName == "A" && this.isCloseTo(event.clientX, event.clientY, child)){
+            this.microMetricLogger.getWidgetLogs(child).misclicks++;
+            console.log(this.microMetricLogger.getWidgetLogs(child));
+          }
+        }
+      }
+    }
+
+    isCloseTo(x, y, element){
+      return this.distanceToElement(x,y,element) < this.toleranceDistance();
+    }
+
+    distanceToElement(x, y, element) {
+        var xmin = element.getBoundingClientRect().left;
+        var ymin = element.getBoundingClientRect().top;
+        var xmax = element.getBoundingClientRect().right;
+        var ymax = element.getBoundingClientRect().bottom;
+
+        var rx = (xmin + xmax) / 2;
+        var ry = (ymin + ymax) / 2;
+        var rwidth = xmax - xmin;
+        var rheight = ymax - ymin;
+
+        var dx = Math.max(Math.abs(x - rx) - rwidth / 2, 0);
+        var dy = Math.max(Math.abs(y - ry) - rheight / 2, 0);
+        return dx * dx + dy * dy;
+    }
+
+}
+
 class HoverAndBack extends MicroMetric {
     constructor(logger) {
       	super(logger);
@@ -535,12 +600,12 @@ class HoverAndBack extends MicroMetric {
           var pathAngle = this.lastTrace().angleWith(this.currentTrace());
           if(this.currentTrace().straightness()>0.8 && Math.abs(pathAngle)<40) {
             var targetElement = document.elementsFromPoint(this.lastTrace().endPoint().x,this.lastTrace().endPoint().y)[0];
-						if (targetElement.tagName == "INPUT" || targetElement.tagName == "SELECT") {
+						if (targetElement.tagName == "INPUT" || targetElement.tagName == "SELECT" || targetElement.tagName == "A") {
 								this.microMetricLogger.getWidgetLogs(targetElement).hoverAndBack++;
 						}
             var startElement = document.elementsFromPoint(this.lastTrace().startPoint().x,this.lastTrace().startPoint().y)[0];
             var endElement = document.elementsFromPoint(this.currentTrace().endPoint().x,this.currentTrace().endPoint().y)[0];
-            if ((startElement.tagName == "INPUT" || startElement.tagName == "SELECT") && (startElement == endElement))
+            if ((startElement.tagName == "INPUT" || startElement.tagName == "SELECT" || targetElement.tagName == "A") && (startElement == endElement))
               this.microMetricLogger.getWidgetLogs(startElement).exitAndBack++;
           }
         }
