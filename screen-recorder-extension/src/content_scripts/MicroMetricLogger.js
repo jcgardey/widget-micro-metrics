@@ -1,3 +1,29 @@
+/************************************************************/
+/****************** HTMLElement Extensions ******************/
+/************************************************************/
+
+HTMLElement.prototype.distanceToPoint = function(x,y) {
+    let boundingBox = this.getBoundingClientRect();
+    var xmin = boundingBox.left;
+    var ymin = boundingBox.top;
+    var xmax = boundingBox.right;
+    var ymax = boundingBox.bottom;
+
+    var rx = (xmin + xmax) / 2;
+    var ry = (ymin + ymax) / 2;
+    var rwidth = xmax - xmin;
+    var rheight = ymax - ymin;
+
+    var dx = Math.max(Math.abs(x - rx) - rwidth / 2, 0);
+    var dy = Math.max(Math.abs(y - ry) - rheight / 2, 0);
+    return dx * dx + dy * dy;
+};
+
+/************************************************************/
+/****************** End HTMLElement Extensions **************/
+/************************************************************/
+
+
 function WidgetLogs () {
   this.metrics = {
     "id": null,
@@ -517,35 +543,17 @@ class MisClick extends MicroMetric {
     }
 
     handler(event){
-      var element = event.target;
-      if (element.tagName != "A" && element.tagName != "INPUT" && element.tagName != "BUTTON") {
-        for(let child of element.children){
-          if(child.tagName == "A" && this.isCloseTo(event.clientX, event.clientY, child)){
-            this.microMetricLogger.getWidgetLogs(child).misclicks++;
-            console.log(this.microMetricLogger.getWidgetLogs(child));
-          }
+      let anchors = document.querySelectorAll('a');
+      for(let anchor of anchors){
+        if (this.isCloseTo(event.clientX, event.clientY, anchor)) {
+          this.microMetricLogger.getWidgetLogs(anchor).misclicks++;
+          console.log(this.microMetricLogger.getWidgetLogs(anchor));
         }
       }
     }
 
     isCloseTo(x, y, element){
-      return this.distanceToElement(x,y,element) < this.toleranceDistance();
-    }
-
-    distanceToElement(x, y, element) {
-        var xmin = element.getBoundingClientRect().left;
-        var ymin = element.getBoundingClientRect().top;
-        var xmax = element.getBoundingClientRect().right;
-        var ymax = element.getBoundingClientRect().bottom;
-
-        var rx = (xmin + xmax) / 2;
-        var ry = (ymin + ymax) / 2;
-        var rwidth = xmax - xmin;
-        var rheight = ymax - ymin;
-
-        var dx = Math.max(Math.abs(x - rx) - rwidth / 2, 0);
-        var dy = Math.max(Math.abs(y - ry) - rheight / 2, 0);
-        return dx * dx + dy * dy;
+      return element.distanceToPoint(x,y) < this.toleranceDistance();
     }
 
 }
