@@ -5,7 +5,9 @@ captureMetricFrom: request
 	screencast := self findScreencast: (requestBody at: 'screencastId').
 	(requestBody at: 'metrics')
 		do: [ :metricDict | 
+			| metric |
 			grabber := self grabbers at: (metricDict at: #widgetType).
-			screencast addMetric: (grabber metricFrom: metricDict).
-			].
+			metric := grabber metricFrom: metricDict.
+			(grabber isValid: metric)
+				ifTrue: [ screencast addMetric: metric ] ].
 	screencast save

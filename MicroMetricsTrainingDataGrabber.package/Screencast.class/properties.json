@@ -9,7 +9,8 @@
 		"id",
 		"screencastName",
 		"events",
-		"metrics"
+		"metrics",
+		"timestamp"
 	],
 	"name" : "Screencast",
 	"type" : "normal"
