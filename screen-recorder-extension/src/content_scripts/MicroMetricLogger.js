@@ -19,6 +19,31 @@ HTMLElement.prototype.distanceToPoint = function(x,y) {
     return dx * dx + dy * dy;
 };
 
+DOMRect.prototype.expandWith = function(anotherBoundingBox){
+  this.left = Math.min(this.left, anotherBoundingBox.left);
+  this.top = Math.min(this.top, anotherBoundingBox.top);
+
+  var newBottom = Math.max(this.bottom, anotherBoundingBox.bottom);
+  this.height = newBottom - this.top;
+
+  var newRight = Math.max(this.right, anotherBoundingBox.right);
+  this.width = newRight - this.left;
+}
+
+allInputs = document.getElementsByTagName('input');
+radioGroups = [];
+for(let input of allInputs) {
+    if(input.type.toLowerCase() == 'radio') {
+        currentElementBox = input.getBoundingClientRect();
+        console.log(currentElementBox);
+        if (typeof(radioGroups[input.name]) == "undefined") {
+          radioGroups[input.name] = {boundingBox: currentElementBox, elements: []};
+        }
+        radioGroups[input.name].elements.push(input);
+        radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
+    }
+}
+
 /************************************************************/
 /****************** End HTMLElement Extensions **************/
 /************************************************************/
