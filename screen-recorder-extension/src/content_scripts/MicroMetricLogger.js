@@ -31,19 +31,26 @@ DOMRect.prototype.expandWith = function(anotherBoundingBox){
 }
 
 allInputs = document.getElementsByTagName('input');
-radioGroups = [];
+var radioGroups = [];
 for(let input of allInputs) {
     if(input.type.toLowerCase() == 'radio') {
         currentElementBox = input.getBoundingClientRect();
-        console.log(currentElementBox);
+        inputX = currentElementBox.x + (currentElementBox.width/2);
+        inputY = currentElementBox.y + (currentElementBox.height/2);
+        allLabels = Array.from(document.getElementsByTagName('label'));
+        closestLabel = allLabels.reduce( (min,current) =>  current.distanceToPoint(inputX,inputY) < min.distanceToPoint(inputX,inputY) ? current : min, allLabels[0] )
+
         if (typeof(radioGroups[input.name]) == "undefined") {
           radioGroups[input.name] = {boundingBox: currentElementBox, elements: []};
         }
+
         radioGroups[input.name].elements.push(input);
+        radioGroups[input.name].elements.push(closestLabel);
         radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
+        radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getBoundingClientRect());
     }
 }
-
+console.log(radioGroups);
 /************************************************************/
 /****************** End HTMLElement Extensions **************/
 /************************************************************/
