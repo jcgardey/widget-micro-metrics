@@ -17,7 +17,14 @@ HTMLElement.prototype.distanceToPoint = function(x,y) {
     var dx = Math.max(Math.abs(x - rx) - rwidth / 2, 0);
     var dy = Math.max(Math.abs(y - ry) - rheight / 2, 0);
     return dx * dx + dy * dy;
-};
+}
+
+HTMLElement.prototype.getAbsoluteBoundingClientRect = function() {
+  var rect = this.getBoundingClientRect();
+  rect.x = rect.left + window.scrollX;
+  rect.y = rect.top + window.scrollY;
+  return rect;
+}
 
 DOMRect.prototype.expandWith = function(anotherBoundingBox){
   this.left = Math.min(this.left, anotherBoundingBox.left);
@@ -34,7 +41,7 @@ allInputs = document.getElementsByTagName('input');
 var radioGroups = [];
 for(let input of allInputs) {
     if(input.type.toLowerCase() == 'radio') {
-        currentElementBox = input.getBoundingClientRect();
+        currentElementBox = input.getAbsoluteBoundingClientRect();
         inputX = currentElementBox.x + (currentElementBox.width/2);
         inputY = currentElementBox.y + (currentElementBox.height/2);
         allLabels = Array.from(document.getElementsByTagName('label'));
@@ -47,7 +54,7 @@ for(let input of allInputs) {
         radioGroups[input.name].elements.push(input);
         radioGroups[input.name].elements.push(closestLabel);
         radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
-        radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getBoundingClientRect());
+        radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
     }
 }
 console.log(radioGroups);
