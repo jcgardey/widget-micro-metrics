@@ -37,25 +37,27 @@ DOMRect.prototype.expandWith = function(anotherBoundingBox){
   this.width = newRight - this.left;
 }
 
-allInputs = document.getElementsByTagName('input');
+DOMRect.prototype.includesPoint = function(x, y){
+  return (x >= this.left) && (x <= this.right) && (y >= this.top) && (y <= this.bottom);
+}
+
+allRadios = document.querySelectorAll('input[type="radio"]');
 var radioGroups = [];
-for(let input of allInputs) {
-    if(input.type.toLowerCase() == 'radio') {
-        currentElementBox = input.getAbsoluteBoundingClientRect();
-        inputX = currentElementBox.x + (currentElementBox.width/2);
-        inputY = currentElementBox.y + (currentElementBox.height/2);
-        allLabels = Array.from(document.getElementsByTagName('label'));
-        closestLabel = allLabels.reduce( (min,current) =>  current.distanceToPoint(inputX,inputY) < min.distanceToPoint(inputX,inputY) ? current : min, allLabels[0] )
+for(let input of allRadios) {
+  currentElementBox = input.getAbsoluteBoundingClientRect();
+  inputX = currentElementBox.x + (currentElementBox.width/2);
+  inputY = currentElementBox.y + (currentElementBox.height/2);
+  allLabels = Array.from(document.getElementsByTagName('label'));
+  closestLabel = allLabels.reduce( (min,current) =>  current.distanceToPoint(inputX,inputY) < min.distanceToPoint(inputX,inputY) ? current : min, allLabels[0] )
 
-        if (typeof(radioGroups[input.name]) == "undefined") {
-          radioGroups[input.name] = {boundingBox: currentElementBox, elements: []};
-        }
+  if (typeof(radioGroups[input.name]) == "undefined") {
+    radioGroups[input.name] = {boundingBox: currentElementBox, elements: []};
+  }
 
-        radioGroups[input.name].elements.push(input);
-        radioGroups[input.name].elements.push(closestLabel);
-        radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
-        radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
-    }
+  radioGroups[input.name].elements.push(input);
+  radioGroups[input.name].elements.push(closestLabel);
+  radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
+  radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
 }
 console.log(radioGroups);
 /************************************************************/
@@ -139,6 +141,7 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.misClick = new MisClick(this);
     this.inputSwitch = new InputSwitch(this);
     this.interactions = new Interactions(this);
+    this.hoverToFirstSelection = new HoverToFirstSelection(this);
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
@@ -206,6 +209,7 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.misClick.setUp();
     this.inputSwitch.setUp();
     this.interactions.setUp();
+    this.hoverToFirstSelection.setUp();
 }
 
 MicroMetricLogger.prototype.stopLogging = function () {
@@ -776,4 +780,34 @@ class Trace {
       var blue = o2 * (o1 / Math.abs(o1));
       return red + blue;
     }
+}
+
+
+class HoverToFirstSelection extends MicroMetric {
+    constructor(logger) {
+      	super(logger);
+        this.handler = this.handler.bind(this);
+    }
+
+    setUp() {
+      document.addEventListener("mousemove", this.handler);
+      console.log('All set');
+    }
+
+    tearDown() {
+      document.removeEventListener("mousemove", this.handler);
+    }
+
+    handler( event ) {
+       let point = {
+         x: event.clientX + window.scrollX,
+         y: event.clientY + window.scrollY
+       };
+       Object.keys(radioGroups).forEach(function(radioGroupName, index) {
+         let radioGroup = radioGroups[radioGroupName];
+         if (radioGroup.boundingBox.includesPoint(point.x, point.y))
+            console.log('Mouse is in radio group ', radioGroupName);
+       })
+    }
+
 }
