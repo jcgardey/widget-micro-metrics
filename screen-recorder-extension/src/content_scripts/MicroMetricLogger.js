@@ -64,6 +64,17 @@ console.log(radioGroups);
 /****************** End HTMLElement Extensions **************/
 /************************************************************/
 
+function initializeWidgetTypes() {
+    // add widget-type attribute to text fields to differentiate from datepickers
+    var allTextInputs = document.querySelectorAll("input[type='text']");
+    for (let i = 0; i < allTextInputs.length; i++) {
+        if (!allTextInputs[i].getAttribute("widget-type")) {
+            allTextInputs[i].setAttribute("widget-type", "text");
+        }
+    }
+}
+initializeWidgetTypes();
+
 
 function WidgetLogs () {
   this.metrics = {
@@ -122,13 +133,23 @@ function AnchorLogs() {
 }
 AnchorLogs.prototype = Object.create(WidgetLogs.prototype);
 
+function DatepickerLogs() {
+    WidgetLogs.call(this);
+    this.metrics = Object.assign({}, this.metrics, {
+        "widgetType": "Datepicker",
+        "selections": 0,
+        "clicks": 0
+    })
+}
+DatepickerLogs.prototype = Object.create(WidgetLogs.prototype);
+
 function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.screencastId = screencastId;
     this.volunteerName = volunteerName;
     this.serverURL = serverURL;
     this.widgets = {};
     this.nextID = 0;
-    this.loggers = { input: TextInputLogs, select: SelectInputLogs, a: AnchorLogs};
+    this.loggers = { text: TextInputLogs, select: SelectInputLogs, a: AnchorLogs, datepicker: DatepickerLogs};
 
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
@@ -142,6 +163,8 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.inputSwitch = new InputSwitch(this);
     this.interactions = new Interactions(this);
     this.hoverToFirstSelection = new HoverToFirstSelection(this);
+
+    this.datepickerClicks = new DatepickerClicks(this);
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
@@ -151,8 +174,9 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
         metricId = anElement.getAttribute("data-metric-id");
     }
     if (!this.widgets[metricId]) {
-        if (this.loggers[anElement.tagName.toLowerCase()]) {
-            this.widgets[metricId] = new (this.loggers[anElement.tagName.toLowerCase()])().getMetrics();
+        var loggerName = anElement.getAttribute("widget-type") ? anElement.getAttribute("widget-type") : anElement.tagName.toLowerCase();
+        if (this.loggers[loggerName]) {
+            this.widgets[metricId] = new (this.loggers[loggerName])().getMetrics();
         }
         else {
           this.widgets[metricId] = new WidgetLogs().getMetrics();
@@ -210,6 +234,8 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.inputSwitch.setUp();
     this.interactions.setUp();
     this.hoverToFirstSelection.setUp();
+
+    this.datepickerClicks.setUp();
 }
 
 MicroMetricLogger.prototype.stopLogging = function () {
@@ -224,6 +250,9 @@ MicroMetricLogger.prototype.stopLogging = function () {
   this.misClick.tearDown();
   this.inputSwitch.tearDown();
   this.interactions.tearDown();
+
+  this.datepickerClicks.tearDown();
+
   document.querySelectorAll('[data-metric-id]').forEach(function(element){element.removeAttribute('data-metric-id')});
   console.log(this.widgets);
   browser.runtime.sendMessage({"message": "sendLogs", "url": this.serverURL, "logs": {"metrics": this.widgets, "screencastId": this.screencastId}});
@@ -289,7 +318,7 @@ MicroMetric.prototype.getTargetWidget = function (point) {
 
 function FocusTime(logger) {
     MicroMetric.call(this, logger);
-    this.targetElements = "input,select";
+    this.targetElements = "input[widget-type='text'],select";
     this.onFocus = this.onFocus.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -361,13 +390,13 @@ TypingLatency.prototype.onKeyPress = function (event) {
 }
 
 TypingLatency.prototype.setUp = function () {
-  addEventListener("input", "focus", this.onFocus);
-  addEventListener("input", "keypress", this.onKeyPress);
+  addEventListener("input[widget-type='text']", "focus", this.onFocus);
+  addEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
 }
 
 TypingLatency.prototype.tearDown = function () {
-  removeEventListener("input", "focus", this.onFocus);
-  removeEventListener("input", "keypress", this.onKeyPress);
+  removeEventListener("input[widget-type='text']", "focus", this.onFocus);
+  removeEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
 }
 
 
@@ -394,13 +423,13 @@ TypingSpeed.prototype.onBlur = function (event) {
 }
 
 TypingSpeed.prototype.setUp = function () {
-  addEventListener("input","keypress", this.onKeyPress);
-  addEventListener("input", "blur", this.onBlur);
+  addEventListener("input[widget-type='text']","keypress", this.onKeyPress);
+  addEventListener("input[widget-type='text']", "blur", this.onBlur);
 }
 
 TypingSpeed.prototype.tearDown = function () {
-  removeEventListener("input", "keypress", this.onKeyPress);
-  removeEventListener("input", "blur", this.onBlur);
+  removeEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
+  removeEventListener("input[widget-type='text']", "blur", this.onBlur);
 }
 
 function TypingVariance (logger) {
@@ -441,13 +470,13 @@ TypingVariance.prototype.onBlur = function (event) {
 }
 
 TypingVariance.prototype.setUp = function () {
-  addEventListener("input","keypress", this.onKeyPress);
-  addEventListener("input", "blur", this.onBlur);
+  addEventListener("input[widget-type='text']","keypress", this.onKeyPress);
+  addEventListener("input[widget-type='text']", "blur", this.onBlur);
 }
 
 TypingVariance.prototype.tearDown = function () {
-  removeEventListener("input", "keypress", this.onKeyPress);
-  removeEventListener("input", "blur", this.onBlur);
+  removeEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
+  removeEventListener("input[widget-type='text']", "blur", this.onBlur);
 }
 
 function CorrectionAmount(logger) {
@@ -468,12 +497,12 @@ CorrectionAmount.prototype.onBlur = function (event) {
 }
 
 CorrectionAmount.prototype.setUp = function () {
-  addEventListener("input","keydown", this.onKeyDown);
+  addEventListener("input[widget-type='text']","keydown", this.onKeyDown);
   //addEventListener("input", "blur", this.onBlur);
 }
 
 CorrectionAmount.prototype.tearDown = function () {
-  removeEventListener("input", "keydown", this.onKeyDown);
+  removeEventListener("input[widget-type='text']", "keydown", this.onKeyDown);
   //removeEventListener("input", "blur", this.onBlur);
 }
 
@@ -810,4 +839,34 @@ class HoverToFirstSelection extends MicroMetric {
        })
     }
 
+}
+
+class DatepickerClicks extends MicroMetric {
+    constructor(logger) {
+        super(logger);
+        this.onBlur = this.onBlur.bind(this);
+        this.onCalendarClick = this.onCalendarClick.bind(this);
+        this.clickRegistered = false;
+    }
+
+    onBlur(event) {
+        this.currentWidget = event.target;
+        if (!this.clickRegistered) {
+            addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+            this.clickRegistered = true;
+        }
+    }
+
+    onCalendarClick() {
+        this.microMetricLogger.getWidgetLogs(this.currentWidget).clicks += 1;
+    }
+
+    setUp() {
+        addEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
+    }
+
+    tearDown() {
+        removeEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
+        removeEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+    }
 }
