@@ -1,0 +1,11 @@
+{
+	"commentStamp" : "JuanCruzGardey 11/20/2019 14:40",
+	"super" : "MicroMetricsGrabber",
+	"category" : "MicroMetricsTrainingDataGrabber-Service",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [ ],
+	"name" : "DatepickerGrabber",
+	"type" : "normal"
+}

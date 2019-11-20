@@ -6,4 +6,5 @@ initialize
 		at: #TextInput put: TextInputGrabber new;
 		at: #SelectInput put: SelectInputGrabber new;
 		at: #Anchor put: AnchorGrabber new;
+		at: #Datepicker put: DatepickerGrabber new;
 		yourself
