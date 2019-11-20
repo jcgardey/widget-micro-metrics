@@ -165,6 +165,7 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.hoverToFirstSelection = new HoverToFirstSelection(this);
 
     this.datepickerClicks = new DatepickerClicks(this);
+    this.datepickerSelections = new DatepickerSelections(this);
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
@@ -236,6 +237,7 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.hoverToFirstSelection.setUp();
 
     this.datepickerClicks.setUp();
+    this.datepickerSelections.setUp();
 }
 
 MicroMetricLogger.prototype.stopLogging = function () {
@@ -252,6 +254,7 @@ MicroMetricLogger.prototype.stopLogging = function () {
   this.interactions.tearDown();
 
   this.datepickerClicks.tearDown();
+  this.datepickerSelections.tearDown();
 
   document.querySelectorAll('[data-metric-id]').forEach(function(element){element.removeAttribute('data-metric-id')});
   console.log(this.widgets);
@@ -841,7 +844,7 @@ class HoverToFirstSelection extends MicroMetric {
 
 }
 
-class DatepickerClicks extends MicroMetric {
+class DatepickerMicroMetric extends MicroMetric {
     constructor(logger) {
         super(logger);
         this.onBlur = this.onBlur.bind(this);
@@ -858,7 +861,6 @@ class DatepickerClicks extends MicroMetric {
     }
 
     onCalendarClick() {
-        this.microMetricLogger.getWidgetLogs(this.currentWidget).clicks += 1;
     }
 
     setUp() {
@@ -868,5 +870,35 @@ class DatepickerClicks extends MicroMetric {
     tearDown() {
         removeEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
         removeEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+    }
+}
+
+class DatepickerClicks extends DatepickerMicroMetric {
+
+    constructor(logger) {
+        super(logger);
+    }
+
+    onCalendarClick(event) {
+        // discard date selections
+        if (event.target.className.indexOf("sc-day") == -1) {
+            this.microMetricLogger.getWidgetLogs(this.currentWidget).clicks += 1;
+            console.log("clicks ", this.microMetricLogger.getWidgetLogs(this.currentWidget).clicks);
+        }
+    }
+
+}
+
+class DatepickerSelections extends DatepickerMicroMetric {
+
+    constructor(logger) {
+        super(logger);
+    }
+
+    onCalendarClick(event) {
+        if (event.target.className.indexOf("sc-day") == 0) {
+            this.microMetricLogger.getWidgetLogs(this.currentWidget).selections += 1;
+            console.log("selections ", this.microMetricLogger.getWidgetLogs(this.currentWidget).selections);
+        }
     }
 }
