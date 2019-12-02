@@ -818,28 +818,56 @@ class Trace {
 class HoverToFirstSelection extends MicroMetric {
     constructor(logger) {
       	super(logger);
-        this.handler = this.handler.bind(this);
+        this.clickHandler = this.clickHandler.bind(this);
+        this.moveHandler = this.moveHandler.bind(this);
+        this._current = null;
     }
 
     setUp() {
-      document.addEventListener("mousemove", this.handler);
-      console.log('All set');
+      document.addEventListener("mousemove", this.moveHandler);
+      document.addEventListener("click", this.clickHandler);
     }
 
     tearDown() {
-      document.removeEventListener("mousemove", this.handler);
+      document.removeEventListener("mousemove", this.moveHandler);
+      document.removeEventListener("click", this.clickHandler);
     }
 
-    handler( event ) {
+    clickHandler( event ) {
+      let point = {
+        x: event.clientX + window.scrollX,
+        y: event.clientY + window.scrollY
+      };
+      Object.keys(radioGroups).forEach(function(radioGroupName, index) {
+        let radioGroup = radioGroups[radioGroupName];
+        if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
+          if (this._current == radioGroupName) {
+            console.log('Click on ', radioGroupName);
+          }
+        }
+      }, this);
+    }
+
+    moveHandler( event ) {
        let point = {
          x: event.clientX + window.scrollX,
          y: event.clientY + window.scrollY
        };
        Object.keys(radioGroups).forEach(function(radioGroupName, index) {
          let radioGroup = radioGroups[radioGroupName];
-         if (radioGroup.boundingBox.includesPoint(point.x, point.y))
-            console.log('Mouse is in radio group ', radioGroupName);
-       })
+         if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
+            if (this._current != radioGroupName) {
+              console.log('Mouse is in radio group ', radioGroupName);
+              this._current = radioGroupName;
+            }
+          }
+          else {
+            if (this._current == radioGroupName) {
+              console.log('Mouse is out of radio group ', radioGroupName);
+              this._current =  null;
+            }
+          }
+       }, this)
     }
 
 }
