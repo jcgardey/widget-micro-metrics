@@ -143,13 +143,25 @@ function DatepickerLogs() {
 }
 DatepickerLogs.prototype = Object.create(WidgetLogs.prototype);
 
+function RadioSetLogs() {
+    WidgetLogs.call(this);
+    this.metrics = Object.assign({}, this.metrics, {
+        "widgetType": "RadioSet",
+        "hoverToFirstSelection": 0,
+        "selections": 0
+        // "clicks": 0,
+        // "misclicks": 0
+    })
+}
+DatepickerLogs.prototype = Object.create(WidgetLogs.prototype);
+
 function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.screencastId = screencastId;
     this.volunteerName = volunteerName;
     this.serverURL = serverURL;
     this.widgets = {};
     this.nextID = 0;
-    this.loggers = { text: TextInputLogs, select: SelectInputLogs, a: AnchorLogs, datepicker: DatepickerLogs};
+    this.loggers = { text: TextInputLogs, select: SelectInputLogs, a: AnchorLogs, datepicker: DatepickerLogs, radioset: RadioSetLogs};
 
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
@@ -821,6 +833,7 @@ class HoverToFirstSelection extends MicroMetric {
         this.clickHandler = this.clickHandler.bind(this);
         this.moveHandler = this.moveHandler.bind(this);
         this._current = null;
+        this._hoverTimestamp = null;
     }
 
     setUp() {
@@ -842,7 +855,7 @@ class HoverToFirstSelection extends MicroMetric {
         let radioGroup = radioGroups[radioGroupName];
         if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
           if (this._current == radioGroupName) {
-            console.log('Click on ', radioGroupName);
+            this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection = ( new Date().getTime()) - this._hoverTimestamp ;
           }
         }
       }, this);
@@ -857,13 +870,12 @@ class HoverToFirstSelection extends MicroMetric {
          let radioGroup = radioGroups[radioGroupName];
          if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
             if (this._current != radioGroupName) {
-              console.log('Mouse is in radio group ', radioGroupName);
               this._current = radioGroupName;
+              this._hoverTimestamp = new Date().getTime();
             }
           }
           else {
             if (this._current == radioGroupName) {
-              console.log('Mouse is out of radio group ', radioGroupName);
               this._current =  null;
             }
           }
