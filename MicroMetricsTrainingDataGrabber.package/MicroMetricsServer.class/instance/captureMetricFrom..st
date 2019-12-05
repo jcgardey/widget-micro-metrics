@@ -2,7 +2,7 @@ initialization
 captureMetricFrom: request
 	| grabber requestBody screencast |
 	requestBody := NeoJSONReader fromString: request contents.
-	screencast := self findScreencast: (requestBody at: 'screencastId').
+	screencast := self findScreencast: (requestBody at: 'screencastId'). self halt.
 	(requestBody at: 'metrics')
 		do: [ :metricDict | 
 			| metric |
