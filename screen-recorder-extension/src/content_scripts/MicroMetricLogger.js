@@ -72,6 +72,12 @@ function initializeWidgetTypes() {
             allTextInputs[i].setAttribute("widget-type", "text");
         }
     }
+    var allRadioSets = document.querySelectorAll('input[type=radio]');
+    for (let i = 0; i < allRadioSets.length; i++) {
+        if (!allRadioSets[i].getAttribute("widget-type")) {
+            allRadioSets[i].setAttribute("widget-type", "radioset");
+        }
+    }
 }
 initializeWidgetTypes();
 
@@ -153,7 +159,7 @@ function RadioSetLogs() {
         // "misclicks": 0
     })
 }
-DatepickerLogs.prototype = Object.create(WidgetLogs.prototype);
+RadioSetLogs.prototype = Object.create(WidgetLogs.prototype);
 
 function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.screencastId = screencastId;
@@ -192,6 +198,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
             this.widgets[metricId] = new (this.loggers[loggerName])().getMetrics();
         }
         else {
+          console.log(anElement);
           this.widgets[metricId] = new WidgetLogs().getMetrics();
         }
         this.widgets[metricId].id = metricId;
@@ -264,6 +271,7 @@ MicroMetricLogger.prototype.stopLogging = function () {
   this.misClick.tearDown();
   this.inputSwitch.tearDown();
   this.interactions.tearDown();
+  this.hoverToFirstSelection.tearDown();
 
   this.datepickerClicks.tearDown();
   this.datepickerSelections.tearDown();
@@ -317,7 +325,7 @@ function withinWidgetSurroundings(point, widget) {
 
 function MicroMetric(logger) {
   this.microMetricLogger = logger;
-  this.targetElementsSelector = "input, select, a";
+  this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], select, a";
 }
 
 MicroMetric.prototype.getTargetWidget = function (point) {
@@ -333,7 +341,7 @@ MicroMetric.prototype.getTargetWidget = function (point) {
 
 function FocusTime(logger) {
     MicroMetric.call(this, logger);
-    this.targetElements = "input[widget-type='text'],select";
+    this.targetElements = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], select";
     this.onFocus = this.onFocus.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -593,7 +601,7 @@ MouseDwellTime.prototype.tearDown = function () {
 
 function Interactions (logger) {
     MicroMetric.call(this, logger);
-    this.targetElementsSelector = "input, select";
+    this.targetElementsSelector = "input[widget-type='text'],select";
     this.onFocus = this.onFocus.bind(this);
 }
 
@@ -722,14 +730,14 @@ class InputSwitch extends MicroMetric {
 	}
 
   setUp() {
-		addEventListener("input", "focus", this.focusHandler);
-		addEventListener("input", "keypress", this.keypressHandler);
+		addEventListener("input[widget-type='text']", "focus", this.focusHandler);
+		addEventListener("input[widget-type='text']", "keypress", this.keypressHandler);
 		document.addEventListener("mousemove", this.mousemoveHandler);
   }
 
   tearDown() {
-    removeEventListener("input", "focus", this.focusHandler);
-    removeEventListener("input", "keypress", this.keypressHandler);
+    removeEventListener("input[widget-type='text']", "focus", this.focusHandler);
+    removeEventListener("input[widget-type='text']", "keypress", this.keypressHandler);
     document.removeEventListener("mousemove", this.mousemoveHandler);
   }
 
