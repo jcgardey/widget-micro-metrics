@@ -154,9 +154,8 @@ function RadioSetLogs() {
     this.metrics = Object.assign({}, this.metrics, {
         "widgetType": "RadioSet",
         "hoverToFirstSelection": 0,
-        "selections": 0
-        // "clicks": 0,
-        // "misclicks": 0
+        "selections": 0,
+        "clicks": 0
     })
 }
 RadioSetLogs.prototype = Object.create(WidgetLogs.prototype);
@@ -840,6 +839,7 @@ class HoverToFirstSelection extends MicroMetric {
       	super(logger);
         this.clickHandler = this.clickHandler.bind(this);
         this.moveHandler = this.moveHandler.bind(this);
+        this.changeHandler = this.changeHandler.bind(this);
         this._current = null;
         this._hoverTimestamp = null;
     }
@@ -847,11 +847,18 @@ class HoverToFirstSelection extends MicroMetric {
     setUp() {
       document.addEventListener("mousemove", this.moveHandler);
       document.addEventListener("click", this.clickHandler);
+      addEventListener("input[type=radio]", "change", this.changeHandler);
     }
 
     tearDown() {
       document.removeEventListener("mousemove", this.moveHandler);
       document.removeEventListener("click", this.clickHandler);
+      removeEventListener("input[type=radio]", "change", this.changeHandler);
+    }
+
+    changeHandler( event ) {
+      let radioGroup = radioGroups[event.target.name];
+      this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).selections++;
     }
 
     clickHandler( event ) {
@@ -863,7 +870,9 @@ class HoverToFirstSelection extends MicroMetric {
         let radioGroup = radioGroups[radioGroupName];
         if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
           if (this._current == radioGroupName) {
-            this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection = ( new Date().getTime()) - this._hoverTimestamp ;
+            this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).clicks++;
+            if (this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection == 0)
+              this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection = (new Date().getTime()) - this._hoverTimestamp;
           }
         }
       }, this);
