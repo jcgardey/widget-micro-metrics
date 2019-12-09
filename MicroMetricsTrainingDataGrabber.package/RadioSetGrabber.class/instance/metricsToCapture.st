@@ -1,3 +1,3 @@
 initialization
 metricsToCapture 
-	^ super metricsToCapture , #(hoverToFirstSelection) 
+	^ super metricsToCapture , #(hoverToFirstSelection clicks selections) 
