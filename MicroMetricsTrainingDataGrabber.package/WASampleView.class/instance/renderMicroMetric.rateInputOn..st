@@ -4,6 +4,7 @@ renderMicroMetric: microMetric rateInputOn: html
 	html tbsLabel
 		beSuccessIf: microMetric widgetType = 'TextInput';
 		beInfoIf: microMetric widgetType = 'SelectInput';
+		beWarningIf: microMetric widgetType = 'RadioSet';
 		title: microMetric widgetType;
 		with: microMetric widgetType first.
 	html space.
