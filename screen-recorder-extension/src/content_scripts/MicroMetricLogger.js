@@ -859,6 +859,9 @@ class HoverToFirstSelection extends MicroMetric {
     changeHandler( event ) {
       let radioGroup = radioGroups[event.target.name];
       this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).selections++;
+      if (this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection == 0)
+        this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection = (new Date().getTime()) - this._hoverTimestamp;
+
     }
 
     clickHandler( event ) {
@@ -871,8 +874,6 @@ class HoverToFirstSelection extends MicroMetric {
         if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
           if (this._current == radioGroupName) {
             this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).clicks++;
-            if (this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection == 0)
-              this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection = (new Date().getTime()) - this._hoverTimestamp;
           }
         }
       }, this);
@@ -887,13 +888,16 @@ class HoverToFirstSelection extends MicroMetric {
          let radioGroup = radioGroups[radioGroupName];
          if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
             if (this._current != radioGroupName) {
+              // Mouse entering "radioGroupName"
               this._current = radioGroupName;
               this._hoverTimestamp = new Date().getTime();
             }
           }
           else {
             if (this._current == radioGroupName) {
+              // Mouse exiting "radioGroupName"
               this._current =  null;
+              this.microMetricLogger.logWidget(radioGroups[radioGroupName].elements[0]);
             }
           }
        }, this)
