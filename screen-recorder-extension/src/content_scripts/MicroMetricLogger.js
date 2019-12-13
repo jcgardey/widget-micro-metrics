@@ -27,14 +27,19 @@ HTMLElement.prototype.getAbsoluteBoundingClientRect = function() {
 }
 
 DOMRect.prototype.expandWith = function(anotherBoundingBox){
-  this.left = Math.min(this.left, anotherBoundingBox.left);
-  this.top = Math.min(this.top, anotherBoundingBox.top);
+    this.left = Math.min(this.left, anotherBoundingBox.left);
+    this.top = Math.min(this.top, anotherBoundingBox.top);
 
-  var newBottom = Math.max(this.bottom, anotherBoundingBox.bottom);
-  this.height = newBottom - this.top;
+    var newBottom = Math.max(this.bottom, anotherBoundingBox.bottom);
+    this.height = newBottom - this.top;
 
-  var newRight = Math.max(this.right, anotherBoundingBox.right);
-  this.width = newRight - this.left;
+    var newRight = Math.max(this.right, anotherBoundingBox.right);
+    this.width = newRight - this.left;
+}
+
+
+DOMRect.prototype.withPadding = function(padding){
+    return new DOMRect(this.x - padding, this.y - padding, this.width + padding, this.height + padding)
 }
 
 DOMRect.prototype.includesPoint = function(x, y){
@@ -886,7 +891,10 @@ class HoverToFirstSelection extends MicroMetric {
        };
        Object.keys(radioGroups).forEach(function(radioGroupName, index) {
          let radioGroup = radioGroups[radioGroupName];
-         if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
+
+          let extendedBox = radioGroup.boundingBox.withPadding(20);
+
+         if (extendedBox.includesPoint(point.x, point.y)) {
             if (this._current != radioGroupName) {
               // Mouse entering "radioGroupName"
               this._current = radioGroupName;
