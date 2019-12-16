@@ -59,7 +59,7 @@ ScreenRecorder.prototype.setUp = function () {
             me.events = [];
         }
     }
-    setInterval(save, 10 * 1000);
+    setInterval(save, 5000);
 };
 
 var screenRecorder = new ScreenRecorder();
