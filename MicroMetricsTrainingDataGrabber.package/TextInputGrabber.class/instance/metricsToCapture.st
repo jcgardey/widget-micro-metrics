@@ -1,4 +1,4 @@
 initialization
 metricsToCapture
 	^ super metricsToCapture
-		, #(typingLatency totalTypingTime typingSpeed typingVariance correctionAmount inputSwitches)
+		, #(typingLatency focusTime typingSpeed typingVariance correctionAmount inputSwitches)
