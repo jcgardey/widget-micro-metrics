@@ -114,7 +114,7 @@ function TextInputLogs() {
                 "typingLatency": 0,
                 "typingSpeed": 0,
                 "typingVariance": null,
-                "totalTypingTime": 0,
+                "focusTime": 0,
                 "correctionAmount": 0,
                 "mouseTraceLength": 0,
                 "typingIntervals": []
@@ -359,17 +359,15 @@ FocusTime.prototype.onFocus = function (event) {
 
 FocusTime.prototype.onBlur = function (event) {
     if (this.mouseBlur) {
-      this.blurTime = this.mouseBlur;
-      this.mouseBlur = null;
       console.log("Mouse blur");
     }
     else {
       this.blurTime = event.timeStamp;
       console.log("Real blur");
+      this.focusTime = this.blurTime - this.startTime;
+      this.logFocusTime();
     }
-    this.focusTime = this.blurTime - this.startTime;
-    this.microMetricLogger.getWidgetLogs(this.currentWidget).totalTypingTime += this.focusTime;
-    this.microMetricLogger.logWidget(this.currentWidget);
+
 }
 
 FocusTime.prototype.onMouseMove = function (event) {
@@ -380,9 +378,16 @@ FocusTime.prototype.onMouseMove = function (event) {
     else {
       if (this.mouseOnCurrentWidget) {
         this.mouseBlur = event.timeStamp;
+        this.focusTime = this.mouseBlur - this.startTime;
+        this.logFocusTime();
         this.mouseOnCurrentWidget = false;
       }
     }
+}
+
+FocusTime.prototype.logFocusTime = function () {
+    this.microMetricLogger.getWidgetLogs(this.currentWidget).focusTime += this.focusTime;
+    this.microMetricLogger.logWidget(this.currentWidget);
 }
 
 FocusTime.prototype.setUp = function () {
