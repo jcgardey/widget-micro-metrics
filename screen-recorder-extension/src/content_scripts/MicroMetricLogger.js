@@ -1,6 +1,15 @@
 /************************************************************/
 /****************** HTMLElement Extensions ******************/
 /************************************************************/
+function makeid(length) {
+   var result           = '';
+   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   var charactersLength = characters.length;
+   for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}
 
 HTMLElement.prototype.distanceToPoint = function(x,y) {
     let boundingBox = this.getBoundingClientRect();
@@ -60,6 +69,55 @@ for(let input of allRadios) {
   radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
 }
 console.log(radioGroups);
+
+var selectOpen = null;
+allSelects = document.getElementsByTagName('select');
+for(let select of allSelects) {
+  select.addEventListener("mousedown", selectListener);
+  select.addEventListener("change", changeListener);
+}
+
+function selectListener(e){
+  e.stopPropagation();
+  let select = e.target;
+  let selectBox = e.target.getAbsoluteBoundingClientRect();
+  var options = document.createElement("div");
+  select.optionsId = makeid(12);
+  options.id = select.optionsId;
+  options.style.position = "absolute";
+  options.style.zIndex = "9999";
+  options.style.left = selectBox.left+'px';
+  options.style.top = (selectBox.top+5)+'px';
+  options.style.width = (selectBox.width-5)+'px';
+  options.style.backgroundColor = "#eee";
+  options.style.padding = "5px 10px";
+  options.style.borderRadius = "5px";
+  options.style.fontSize = "12px";
+  for (var i = 0; i < select.options.length; i++) {
+    var option = document.createElement("p");
+    option.style.padding = "0";
+    option.style.margin = "0";
+    option.textContent = select.options[i].textContent;
+    options.appendChild(option);
+  }
+  document.body.appendChild(options);
+  selectOpen = select;
+}
+
+function changeListener(e){
+  selectOpen = null;
+  var options = document.getElementById(e.target.optionsId);
+  document.body.removeChild(options);
+}
+
+document.addEventListener("mousedown", function(e){
+  if (selectOpen!=null) {
+    var options = document.getElementById(selectOpen.optionsId);
+    document.body.removeChild(options);
+    selectOpen = null;
+    console.log("selectOpen: ", selectOpen);
+  }
+})
 /************************************************************/
 /****************** End HTMLElement Extensions **************/
 /************************************************************/
