@@ -4,19 +4,14 @@
 
 HTMLElement.prototype.distanceToPoint = function(x,y) {
     let boundingBox = this.getBoundingClientRect();
-    var xmin = boundingBox.left;
-    var ymin = boundingBox.top;
-    var xmax = boundingBox.right;
-    var ymax = boundingBox.bottom;
-
-    var rx = (xmin + xmax) / 2;
-    var ry = (ymin + ymax) / 2;
-    var rwidth = xmax - xmin;
-    var rheight = ymax - ymin;
-
-    var dx = Math.max(Math.abs(x - rx) - rwidth / 2, 0);
-    var dy = Math.max(Math.abs(y - ry) - rheight / 2, 0);
-    return dx * dx + dy * dy;
+    let rect = {
+      max:{x: boundingBox.right , y:boundingBox.bottom},
+      min:{x:boundingBox.left, y:boundingBox.top}
+    };
+    let point = {x:x,y:y};
+    var dx = Math.max(rect.min.x - point.x, 0, point.x - rect.max.x);
+    var dy = Math.max(rect.min.y - point.y, 0, point.y - rect.max.y);
+    return Math.sqrt(dx*dx + dy*dy);
 }
 
 HTMLElement.prototype.getAbsoluteBoundingClientRect = function() {
