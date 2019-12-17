@@ -398,7 +398,7 @@ MicroMetric.prototype.getTargetWidget = function (point) {
 
 function FocusTime(logger) {
     MicroMetric.call(this, logger);
-    this.targetElements = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], select";
+    this.targetElements = "input[widget-type='text'], input[widget-type='radio'], select";
     this.onFocus = this.onFocus.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -1026,6 +1026,7 @@ class DatepickerSelections extends DatepickerMicroMetric {
         if (event.target.className.indexOf("sc-day") == 0) {
             this.microMetricLogger.getWidgetLogs(this.currentWidget).selections += 1;
             console.log("selections ", this.microMetricLogger.getWidgetLogs(this.currentWidget).selections);
+            this.microMetricLogger.logWidget(this.currentWidget);
         }
     }
 }
