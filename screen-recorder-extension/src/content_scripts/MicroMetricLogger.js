@@ -376,314 +376,326 @@ function withinWidgetSurroundings(point, widget) {
   return (
             (point.x > rectangle.topLeft.x) && (point.x < rectangle.bottomRight.x) &&
             (point.y > rectangle.topLeft.y) && (point.y < rectangle.bottomRight.y)
-
           )
 }
 
-function MicroMetric(logger) {
-  this.microMetricLogger = logger;
-  this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], select, a";
-}
+/********************************************************************************/
+/********                                                                 *******/
+/********                         MICROMETRICS                            *******/
+/********                                                                 *******/
+/********************************************************************************/
 
-MicroMetric.prototype.getTargetWidget = function (point) {
-  var targetElements = document.querySelectorAll(this.targetElementsSelector);
-  for(var i=0; i < targetElements.length;i++) {
-    if (withinWidgetSurroundings(point,targetElements[i])) {
-      return targetElements[i];
-    }
+
+class MicroMetric {
+  constructor(logger){
+    this.microMetricLogger = logger;
+    this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], select, a";
   }
-  return null;
-}
-
-
-function FocusTime(logger) {
-    MicroMetric.call(this, logger);
-    this.targetElements = "input[widget-type='text'], input[widget-type='radio'], select";
-    this.onFocus = this.onFocus.bind(this);
-    this.onBlur = this.onBlur.bind(this);
-    this.onMouseMove = this.onMouseMove.bind(this);
-}
-
-
-FocusTime.prototype.onFocus = function (event) {
-    this.currentWidget = event.target;
-    this.startTime = event.timeStamp;
-}
-
-FocusTime.prototype.onBlur = function (event) {
-    if (this.mouseBlur) {
-      console.log("Mouse blur");
-    }
-    else {
-      this.blurTime = event.timeStamp;
-      console.log("Real blur");
-      this.focusTime = this.blurTime - this.startTime;
-      this.logFocusTime();
-    }
-
-}
-
-FocusTime.prototype.onMouseMove = function (event) {
-    if (withinWidgetSurroundings({ x: event.pageX, y: event.pageY},this.currentWidget)) {
-        this.mouseOnCurrentWidget = true;
-        this.mouseBlur = null;
-    }
-    else {
-      if (this.mouseOnCurrentWidget) {
-        this.mouseBlur = event.timeStamp;
-        this.focusTime = this.mouseBlur - this.startTime;
-        this.logFocusTime();
-        this.mouseOnCurrentWidget = false;
+  
+  getTargetWidget = function (point) {
+    var targetElements = document.querySelectorAll(this.targetElementsSelector);
+    for(var i=0; i < targetElements.length;i++) {
+      if (withinWidgetSurroundings(point,targetElements[i])) {
+        return targetElements[i];
       }
     }
+    return null;
+  }
 }
 
-FocusTime.prototype.logFocusTime = function () {
-    this.microMetricLogger.getWidgetLogs(this.currentWidget).focusTime += this.focusTime;
-    this.microMetricLogger.logWidget(this.currentWidget);
+class FocusTime extends MicroMetric {
+  constructor(logger){
+    super(logger);
+    this.targetElements = "input[widget-type='text'], input[widget-type='radio'], select";
+    this.focusHandler = this.focusHandler.bind(this);
+    this.blurHandler = this.blurHandler.bind(this);
+    this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+  }
+  
+  setUp(){
+    addEventListener(this.targetElements,"focus", this.focusHandler);
+    addEventListener(this.targetElements,"blur", this.blurHandler);
+    document.addEventListener("mousemove", this.mouseMoveHandler);
+  }
+  
+  tearDown(){
+    removeEventListener(this.targetElements,"focus", this.focusHandler);
+    removeEventListener(this.targetElements,"blur", this.blurHandler);
+    document.removeEventListener("mousemove", this.mouseMoveHandler);
+  }
+  
+  focusHandler(event) {
+      this.currentWidget = event.target;
+      this.startTime = event.timeStamp;
+  }
+  
+  blurHandler(event) {
+      if (this.mouseBlur) {
+        console.log("Mouse blur");
+      }
+      else {
+        this.blurTime = event.timeStamp;
+        console.log("Real blur");
+        this.focusTime = this.blurTime - this.startTime;
+        this.logFocusTime();
+      }
+  
+  }
+  
+  mouseMoveHandler(event) {
+      if (withinWidgetSurroundings({ x: event.pageX, y: event.pageY},this.currentWidget)) {
+          this.mouseOnCurrentWidget = true;
+          this.mouseBlur = null;
+      }
+      else {
+        if (this.mouseOnCurrentWidget) {
+          this.mouseBlur = event.timeStamp;
+          this.focusTime = this.mouseBlur - this.startTime;
+          this.logFocusTime();
+          this.mouseOnCurrentWidget = false;
+        }
+      }
+  }
+  
+  logFocusTime() {
+      this.microMetricLogger.getWidgetLogs(this.currentWidget).focusTime += this.focusTime;
+      this.microMetricLogger.logWidget(this.currentWidget);
+  }
 }
 
-FocusTime.prototype.setUp = function () {
-  addEventListener(this.targetElements,"focus", this.onFocus);
-  addEventListener(this.targetElements,"blur", this.onBlur);
-  document.addEventListener("mousemove", this.onMouseMove);
-}
-
-FocusTime.prototype.tearDown = function () {
-  removeEventListener(this.targetElements,"focus", this.onFocus);
-  removeEventListener(this.targetElements,"blur", this.onBlur);
-  document.removeEventListener("mousemove", this.onMouseMove);
-}
-
-function TypingLatency (logger) {
-  MicroMetric.call(this, logger);
-  this.onFocus = this.onFocus.bind(this);
-  this.onKeyPress = this.onKeyPress.bind(this);
-}
-
-TypingLatency.prototype.onFocus = function (event) {
+class TypingLatency extends MicroMetric {
+  constructor(logger) {
+    super(logger);
+    this.focusHandler = this.focusHandler.bind(this);
+    this.keyPressHandler = this.keyPressHandler.bind(this);
+  }
+  
+  focusHandler(event) {
     this.alreadyTyped = false;
     this.startTime = event.timeStamp;
-}
-
-TypingLatency.prototype.onKeyPress = function (event) {
-  if (!this.alreadyTyped) {
-      this.typingLatency = event.timeStamp - this.startTime;
-      this.microMetricLogger.getWidgetLogs(event.target).typingLatency += this.typingLatency;
-      this.alreadyTyped = true;
+  }
+  
+  keyPressHandler(event) {
+    if (!this.alreadyTyped) {
+        this.typingLatency = event.timeStamp - this.startTime;
+        this.microMetricLogger.getWidgetLogs(event.target).typingLatency += this.typingLatency;
+        this.alreadyTyped = true;
+    }
+  }
+  
+  setUp() {
+    addEventListener("input[widget-type='text']", "focus", this.focusHandler);
+    addEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+  }
+  
+  tearDown() {
+    removeEventListener("input[widget-type='text']", "focus", this.focusHandler);
+    removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
   }
 }
 
-TypingLatency.prototype.setUp = function () {
-  addEventListener("input[widget-type='text']", "focus", this.onFocus);
-  addEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
-}
-
-TypingLatency.prototype.tearDown = function () {
-  removeEventListener("input[widget-type='text']", "focus", this.onFocus);
-  removeEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
-}
-
-
-function TypingSpeed (logger) {
-  MicroMetric.call(this, logger);
-  this.onKeyPress = this.onKeyPress.bind(this);
-  this.onBlur = this.onBlur.bind(this);
-  this.charsTyped = 0;
-}
-
-TypingSpeed.prototype.onKeyPress = function (event) {
-  if (this.charsTyped == 0) {
-    this.startTime = event.timeStamp;
-  }
-  this.charsTyped++;
-}
-
-TypingSpeed.prototype.onBlur = function (event) {
-  if (this.charsTyped > 0) {
-    this.typingSpeed = (event.timeStamp - this.startTime) / this.charsTyped;
-    this.microMetricLogger.getWidgetLogs(event.target).typingSpeed += this.typingSpeed;
+class TypingSpeed extends MicroMetric {
+  constructor(logger) {
+    super(logger);
+    this.keyPressHandler = this.keyPressHandler.bind(this);
+    this.blurHandler = this.blurHandler.bind(this);
     this.charsTyped = 0;
   }
-}
 
-TypingSpeed.prototype.setUp = function () {
-  addEventListener("input[widget-type='text']","keypress", this.onKeyPress);
-  addEventListener("input[widget-type='text']", "blur", this.onBlur);
-}
-
-TypingSpeed.prototype.tearDown = function () {
-  removeEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
-  removeEventListener("input[widget-type='text']", "blur", this.onBlur);
-}
-
-function TypingVariance (logger) {
-  MicroMetric.call(this, logger);
-  this.onKeyPress = this.onKeyPress.bind(this);
-  this.onBlur = this.onBlur.bind(this);
-  this.lastKeypressTimestamp = 0;
-}
-
-TypingVariance.prototype.onKeyPress = function (event) {
-  if (this.lastKeypressTimestamp != 0) {
-      var switchingTime = event.timeStamp;
-      var intraKeypressInterval = switchingTime - this.lastKeypressTimestamp;
-      this.microMetricLogger.getWidgetLogs(event.target).typingIntervals.push(intraKeypressInterval);
+  setUp() {
+    addEventListener("input[widget-type='text']","keypress", this.keyPressHandler);
+    addEventListener("input[widget-type='text']", "blur", this.blurHandler);
   }
-  this.lastKeypressTimestamp = event.timeStamp;
-}
-
-TypingVariance.prototype.standardDeviation = function (typingIntervals) {
-  if (typingIntervals.length == 0) {
-      return null;
+  
+  tearDown() {
+    removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+    removeEventListener("input[widget-type='text']", "blur", this.blurHandler);
   }
-  var total = 0;
-  var total_power_of_two = 0;
-  for (var i=0; i < typingIntervals.length;i++) {
-      total += typingIntervals[i];
-      total_power_of_two += Math.pow(typingIntervals[i], 2);
-  };
-  var media = total / typingIntervals.length;
-  var variance = (total_power_of_two / typingIntervals.length) - Math.pow(media, 2);
-  return Math.pow(variance, 1 / 2);
+  
+  keyPressHandler(event) {
+    if (this.charsTyped == 0) {
+      this.startTime = event.timeStamp;
+    }
+    this.charsTyped++;
+  }
+  
+  blurHandler(event) {
+    if (this.charsTyped > 0) {
+      this.typingSpeed = (event.timeStamp - this.startTime) / this.charsTyped;
+      this.microMetricLogger.getWidgetLogs(event.target).typingSpeed += this.typingSpeed;
+      this.charsTyped = 0;
+    }
+  }
 }
 
-TypingVariance.prototype.onBlur = function (event) {
-  var variance = this.standardDeviation(this.microMetricLogger.getWidgetLogs(event.target).typingIntervals);
-  this.microMetricLogger.getWidgetLogs(event.target).typingVariance = variance;
-  this.lastKeypressTimestamp = 0;
+class TypingVariance extends MicroMetric {
+  constructor(logger) {
+    super(logger);
+    this.keyPressHandler = this.keyPressHandler.bind(this);
+    this.blurHandler = this.blurHandler.bind(this);
+    this.lastKeypressTimestamp = 0;
+  }
+
+  setUp() {
+    addEventListener("input[widget-type='text']","keypress", this.keyPressHandler);
+    addEventListener("input[widget-type='text']", "blur", this.blurHandler);
+  }
+  
+  tearDown() {
+    removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+    removeEventListener("input[widget-type='text']", "blur", this.blurHandler);
+  }
+  
+  keyPressHandler(event) {
+    if (this.lastKeypressTimestamp != 0) {
+        var switchingTime = event.timeStamp;
+        var intraKeypressInterval = switchingTime - this.lastKeypressTimestamp;
+        this.microMetricLogger.getWidgetLogs(event.target).typingIntervals.push(intraKeypressInterval);
+    }
+    this.lastKeypressTimestamp = event.timeStamp;
+  }
+  
+  standardDeviation(typingIntervals) {
+    if (typingIntervals.length == 0) {
+        return null;
+    }
+    var total = 0;
+    var total_power_of_two = 0;
+    for (var i=0; i < typingIntervals.length;i++) {
+        total += typingIntervals[i];
+        total_power_of_two += Math.pow(typingIntervals[i], 2);
+    };
+    var media = total / typingIntervals.length;
+    var variance = (total_power_of_two / typingIntervals.length) - Math.pow(media, 2);
+    return Math.pow(variance, 1 / 2);
+  }
+  
+  blurHandler(event) {
+    var variance = this.standardDeviation(this.microMetricLogger.getWidgetLogs(event.target).typingIntervals);
+    this.microMetricLogger.getWidgetLogs(event.target).typingVariance = variance;
+    this.lastKeypressTimestamp = 0;
+  } 
 }
 
-TypingVariance.prototype.setUp = function () {
-  addEventListener("input[widget-type='text']","keypress", this.onKeyPress);
-  addEventListener("input[widget-type='text']", "blur", this.onBlur);
-}
-
-TypingVariance.prototype.tearDown = function () {
-  removeEventListener("input[widget-type='text']", "keypress", this.onKeyPress);
-  removeEventListener("input[widget-type='text']", "blur", this.onBlur);
-}
-
-function CorrectionAmount(logger) {
-  MicroMetric.call(this, logger);
-  this.onKeyDown = this.onKeyDown.bind(this);
-  //this.onBlur = this.onBlur.bind(this);
-}
-
-CorrectionAmount.prototype.onKeyDown = function (event) {
-  if (event.keyCode === 8) {
+class CorrectionAmount extends MicroMetric {
+  constructor(logger) {
+    super(logger);
+    this.keyDownHandler = this.keyDownHandler.bind(this);
+  }
+  
+  setUp() {
+    addEventListener("input[widget-type='text']","keydown", this.keyDownHandler);
+  }
+  
+  tearDown() {
+    removeEventListener("input[widget-type='text']", "keydown", this.keyDownHandler);
+  }
+  
+  keyDownHandler(event) {
+    if (event.keyCode === 8) {
       this.microMetricLogger.getWidgetLogs(event.target).correctionAmount++;
+    }
   }
 }
 
-CorrectionAmount.prototype.onBlur = function (event) {
-  console.log("Correction amount " + this.correctionAmount);
-  this.correctionAmount = 0;
-}
-
-CorrectionAmount.prototype.setUp = function () {
-  addEventListener("input[widget-type='text']","keydown", this.onKeyDown);
-  //addEventListener("input", "blur", this.onBlur);
-}
-
-CorrectionAmount.prototype.tearDown = function () {
-  removeEventListener("input[widget-type='text']", "keydown", this.onKeyDown);
-  //removeEventListener("input", "blur", this.onBlur);
-}
-
-function MouseTraceLength (logger) {
-    MicroMetric.call(this, logger);
+class MouseTraceLength extends MicroMetric {
+  constructor(logger) {
+    super(logger);
     this.currentWidget = null;
     this.lastWidget = null;
+    this.lastTop = null;
+    this.lastLeft = null;
     this.mouseTraceLength = 0;
-    this.onMouseMove = this.onMouseMove.bind(this);
-}
-MouseTraceLength.prototype = Object.create(MicroMetric.prototype);
+    this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+  }
+  
+  setUp() {
+    document.addEventListener("mousemove", this.mouseMoveHandler);
+  }
+  
+  tearDown() {
+    document.removeEventListener("mousemove", this.mouseMoveHandler);
+  }
 
-MouseTraceLength.prototype.onMouseMove = function (event) {
-    this.currentWidget = this.getTargetWidget({ x:event.pageX, y:event.pageY});
-    if (this.currentWidget != this.lastWidget) {
-      if (this.lastWidget) {
-        //console.log("Trace length " + this.mouseTraceLength, "on ", this.lastWidget);
-        this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseTraceLength += this.mouseTraceLength;
+  mouseMoveHandler(event) {
+      this.currentWidget = this.getTargetWidget({ x:event.pageX, y:event.pageY});
+      if (this.currentWidget != this.lastWidget) {
+        if (this.lastWidget) {
+          //console.log("Trace length " + this.mouseTraceLength, "on ", this.lastWidget);
+          this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseTraceLength += this.mouseTraceLength;
+        }
+        this.lastTop = event.pageY;
+        this.lastLeft = event.pageX;
+        this.mouseTraceLength = 0;
+        this.lastWidget = this.currentWidget;
       }
-      this.lastTop = event.pageY;
-      this.lastLeft = event.pageX;
-      this.mouseTraceLength = 0;
-      this.lastWidget = this.currentWidget;
-    }
-    var delta = Math.round(
-                    Math.sqrt(
-                      Math.pow(this.lastTop - event.pageY, 2) +
-                      Math.pow(this.lastLeft - event.pageX, 2)
-                    )
-                  );
-    this.mouseTraceLength += delta;
-    lastTop = event.pageY;
-    lastLeft = event.pageX;
-}
-
-MouseTraceLength.prototype.setUp = function () {
-  document.addEventListener("mousemove", this.onMouseMove);
-}
-
-MouseTraceLength.prototype.tearDown = function () {
-  document.removeEventListener("mousemove", this.onMouseMove);
-}
-
-function MouseDwellTime (logger) {
-    MicroMetric.call(this, logger);
-    this.onMouseMove = this.onMouseMove.bind(this);
-    this.lastWidget = null;
-    this.lastTimestamp = null;
-}
-
-MouseDwellTime.prototype = Object.create(MicroMetric.prototype);
-
-MouseDwellTime.prototype.onMouseMove = function (event) {
-  this.currentWidget = this.getTargetWidget({ x:event.pageX, y:event.pageY});
-  if (this.currentWidget != this.lastWidget) {
-    var now = event.timeStamp;
-    if (this.lastWidget) {
-        var dwellTime = now - this.lastTimestamp;
-        this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
-    }
-    this.lastWidget = this.currentWidget;
-    this.lastTimestamp = now;
+      var delta = Math.round(
+                      Math.sqrt(
+                        Math.pow(this.lastTop - event.pageY, 2) +
+                        Math.pow(this.lastLeft - event.pageX, 2)
+                      )
+                    );
+      this.mouseTraceLength += delta;
+      /*lastTop = event.pageY;
+      lastLeft = event.pageX;*/
   }
 }
 
-MouseDwellTime.prototype.setUp = function () {
-  document.addEventListener("mousemove", this.onMouseMove);
+class MouseDwellTime extends MicroMetric {
+  constructor(logger) {
+    super(logger);
+    this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+    this.lastWidget = null;
+    this.lastTimestamp = null;
+  }
+  
+  setUp() {
+    document.addEventListener("mousemove", this.mouseMoveHandler);
+  }
+  
+  tearDown() {
+    document.removeEventListener("mousemove", this.mouseMoveHandler);
+  }
+
+  mouseMoveHandler(event) {
+    this.currentWidget = this.getTargetWidget({ x:event.pageX, y:event.pageY});
+    if (this.currentWidget != this.lastWidget) {
+      var now = event.timeStamp;
+      if (this.lastWidget) {
+          var dwellTime = now - this.lastTimestamp;
+          this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
+      }
+      this.lastWidget = this.currentWidget;
+      this.lastTimestamp = now;
+    }
+  }
 }
 
-MouseDwellTime.prototype.tearDown = function () {
-  document.removeEventListener("mousemove", this.onMouseMove);
-}
-
-function Interactions (logger) {
-    MicroMetric.call(this, logger);
+class Interactions extends MicroMetric {
+	constructor(logger) {
+		super(logger);
     this.targetElementsSelector = "input[widget-type='text'],select";
-    this.onFocus = this.onFocus.bind(this);
-}
+    this.focusHandler = this.focusHandler.bind(this);
+  }
+  
+  setUp() {
+    addEventListener(this.targetElementsSelector, "focus", this.focusHandler);
+  }
+  
+  tearDown() {
+    removeEventListener(this.targetElementsSelector, "focus", this.focusHandler);
+  }
 
-Interactions.prototype.onFocus = function (event) {
-  this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
-  console.log("interactions ", this.microMetricLogger.getWidgetLogs(event.target).interactions);
-}
-
-Interactions.prototype.setUp = function () {
-  addEventListener(this.targetElementsSelector, "focus", this.onFocus);
-}
-
-Interactions.prototype.tearDown = function () {
-  removeEventListener(this.targetElementsSelector, "focus", this.onFocus);
+  focusHandler(event) {
+    this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
+    console.log("interactions ", this.microMetricLogger.getWidgetLogs(event.target).interactions);
+  }
 }
 
 class MisClick extends MicroMetric {
     constructor(logger) {
       	super(logger);
-        this._toleranceDistance = 500;
+        this._toleranceDistance = 10;
         this.handler = this.handler.bind(this);
     }
 
@@ -896,7 +908,6 @@ class Trace {
     }
 }
 
-
 class HoverToFirstSelection extends MicroMetric {
     constructor(logger) {
       	super(logger);
@@ -973,30 +984,29 @@ class HoverToFirstSelection extends MicroMetric {
 
 class DatepickerMicroMetric extends MicroMetric {
     constructor(logger) {
-        super(logger);
-        this.onBlur = this.onBlur.bind(this);
-        this.onCalendarClick = this.onCalendarClick.bind(this);
-        this.clickRegistered = false;
+      super(logger);
+      this.onBlur = this.onBlur.bind(this);
+      this.onCalendarClick = this.onCalendarClick.bind(this);
+      this.clickRegistered = false;
     }
 
     onBlur(event) {
-        this.currentWidget = event.target;
-        if (!this.clickRegistered) {
-            addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
-            this.clickRegistered = true;
-        }
+      this.currentWidget = event.target;
+      if (!this.clickRegistered) {
+        addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+        this.clickRegistered = true;
+      }
     }
 
-    onCalendarClick() {
-    }
+    onCalendarClick() {}
 
     setUp() {
-        addEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
+      addEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
     }
 
     tearDown() {
-        removeEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
-        removeEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+      removeEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
+      removeEventListener("div.salsa-calendar", "click", this.onCalendarClick);
     }
 }
 
@@ -1026,7 +1036,6 @@ class DatepickerSelections extends DatepickerMicroMetric {
         if (event.target.className.indexOf("sc-day") == 0) {
             this.microMetricLogger.getWidgetLogs(this.currentWidget).selections += 1;
             console.log("selections ", this.microMetricLogger.getWidgetLogs(this.currentWidget).selections);
-            this.microMetricLogger.logWidget(this.currentWidget);
         }
     }
 }
