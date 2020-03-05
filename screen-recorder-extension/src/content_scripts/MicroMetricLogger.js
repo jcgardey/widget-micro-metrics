@@ -674,7 +674,7 @@ class MouseDwellTime extends MicroMetric {
 class Interactions extends MicroMetric {
 	constructor(logger) {
 		super(logger);
-    this.targetElementsSelector = "input[widget-type='text'],select";
+    this.targetElementsSelector = "input[widget-type='text'],select,input[widget-type='datepicker']";
     this.focusHandler = this.focusHandler.bind(this);
   }
   
@@ -1036,6 +1036,7 @@ class DatepickerSelections extends DatepickerMicroMetric {
         if (event.target.className.indexOf("sc-day") == 0) {
             this.microMetricLogger.getWidgetLogs(this.currentWidget).selections += 1;
             console.log("selections ", this.microMetricLogger.getWidgetLogs(this.currentWidget).selections);
+            this.microMetricLogger.logWidget(this.currentWidget);
         }
     }
 }
