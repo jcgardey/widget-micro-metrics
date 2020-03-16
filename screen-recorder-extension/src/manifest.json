@@ -11,10 +11,12 @@
       "node_modules/jquery/dist/jquery.js",
       "content_scripts/RecorderModal.js",
       "content_scripts/MicroMetriclogger.js",
-      "content_scripts/ScreenRecorder.js"
+      "content_scripts/ScreenRecorder.js",
+      "content_scripts/Select.js"
     ],
     "css": [
-      "content_scripts/css/style.css"
+      "content_scripts/css/style.css",
+      "content_scripts/css/Select.css"
     ]
   }],
   "background":{
@@ -34,6 +36,7 @@
   },
   "permissions": [
     "<all_urls>",
-    "tabs"
+    "tabs",
+    "storage"
   ]
 }
