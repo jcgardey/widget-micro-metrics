@@ -7,16 +7,23 @@ function ScreenRecorder () {
 ScreenRecorder.prototype.toggleRecording = function () {
     if (!this.recording) {
         //modal.show();
+        this.screencastId = Math.random().toString(36).substring(2, 15) + "-" + Date.now();
         this.screencastName = this.getNextID();
-        console.log(this.screencastName);
+        chrome.storage.sync.set({"screencastId": this.screencastId});
+        chrome.storage.sync.set({"screencastName": this.screencastId});
         this.startRecording();
     }
     else {
-        this.stopRecording();
-        this.recording = false;
-        this.eventLogger.stopLogging();
+        this.pauseRecording();
+        chrome.storage.sync.clear();
         browser.runtime.sendMessage({"message": "stop"});
     }
+}
+
+ScreenRecorder.prototype.pauseRecording = function () {
+    this.stopScreencast();
+    this.eventLogger.stopLogging();
+    this.recording = false;
 }
 
 ScreenRecorder.prototype.getNextID = function () {
@@ -37,34 +44,56 @@ ScreenRecorder.prototype.getNextID = function () {
 ScreenRecorder.prototype.startRecording = function () {
     this.events = [];
     this.recording = true;
-    this.screencastId = Math.random().toString(36).substring(2, 15) + "-" + Date.now();
     browser.runtime.sendMessage({"message": "start"});
     const me = this;
-    this.stopRecording = rrweb.record({
+    this.stopScreencast = rrweb.record({
         emit(event) {
             me.events.push(event);
         },
     });
+
     this.eventLogger = new MicroMetricLogger(this.screencastId, this.screencastName, "http://localhost:1701/micrometrics/metrics/");
     this.eventLogger.startLogging();
 };
 
 ScreenRecorder.prototype.setUp = function () {
-    // this function will send events to the backend and reset the events array
     const me = this;
-    function save() {
-        if (me.events.length > 0) {
-            browser.runtime.sendMessage({"message":"save", "data":{"events": me.events, "screencastName": me.screencastName,
-                    "screencastId": me.screencastId, "url": document.location.href}});
-            me.events = [];
+    window.addEventListener("blur", function () {
+        if (me.recording) {
+            me.pauseRecording();
+            me.save();
         }
-    }
-    setInterval(save, 5000);
+    });
+    // this function will send events to the backend and reset the events array
+    setInterval(this.save.bind(this), 1000);
 };
+
+ScreenRecorder.prototype.save = function () {
+    if (this.events.length > 0) {
+        browser.runtime.sendMessage({"message":"save", "data":{"events": this.events, "screencastName": this.screencastName,
+                "screencastId": this.screencastId, "url": document.location.href}});
+        this.events = [];
+    }
+}
+
+ScreenRecorder.prototype.checkExistingScreencast = function () {
+    const me = this;
+    chrome.storage.sync.get(["screencastId", "screencastName"], function (data) {
+        console.log("data ", data);
+        if (data.screencastId) {
+            me.screencastId = data.screencastId;
+            me.screencastName = data.screencastName;
+            me.startRecording();
+        }
+    });
+};
+
 
 var screenRecorder = new ScreenRecorder();
 screenRecorder.setUp();
-//var modal = new RecorderModal(screenRecorder);
+//window.addEventListener("focus", function () {
+    screenRecorder.checkExistingScreencast();
+//});
 
 browser.runtime.onMessage.addListener((request, sender) => {
     screenRecorder.toggleRecording();

@@ -70,6 +70,7 @@ for(let input of allRadios) {
 }
 console.log(radioGroups);
 
+/**
 var selectOpen = null;
 allSelects = document.getElementsByTagName('select');
 for(let select of allSelects) {
@@ -117,7 +118,7 @@ document.addEventListener("mousedown", function(e){
     selectOpen = null;
     console.log("selectOpen: ", selectOpen);
   }
-})
+}) */
 /************************************************************/
 /****************** End HTMLElement Extensions **************/
 /************************************************************/
