@@ -431,6 +431,9 @@ class FocusTime extends MicroMetric {
   }
   
   blurHandler(event) {
+      if (!this.currentWidget) {
+          return null;
+      }
       if (this.mouseBlur) {
         console.log("Mouse blur");
       }
