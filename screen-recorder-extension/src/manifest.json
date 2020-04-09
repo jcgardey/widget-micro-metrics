@@ -12,11 +12,11 @@
       "content_scripts/RecorderModal.js",
       "content_scripts/MicroMetriclogger.js",
       "content_scripts/ScreenRecorder.js",
-      "content_scripts/Select.js"
+      "content_scripts/Select.js",
+      "content_scripts/PagePatches.js"
     ],
     "css": [
-      "content_scripts/css/style.css",
-      "content_scripts/css/Select.css"
+      "content_scripts/css/style.css"
     ]
   }],
   "background":{
@@ -37,6 +37,8 @@
   "permissions": [
     "<all_urls>",
     "tabs",
-    "storage"
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
   ]
 }
