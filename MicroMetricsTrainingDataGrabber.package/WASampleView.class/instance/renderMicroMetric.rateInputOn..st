@@ -5,6 +5,8 @@ renderMicroMetric: microMetric rateInputOn: html
 		beSuccessIf: microMetric widgetType = 'TextInput';
 		beInfoIf: microMetric widgetType = 'SelectInput';
 		beWarningIf: microMetric widgetType = 'RadioSet';
+		beDangerIf: microMetric widgetType = 'Anchor';
+		bePrimaryIf: microMetric widgetType = 'Datepicker';
 		title: microMetric widgetType;
 		with: microMetric widgetType first.
 	html space.
