@@ -67,7 +67,7 @@ ScreenRecorder.prototype.setUp = function () {
     window.onunload = pauseScreencast;
     window.onblur = pauseScreencast;
     // this function will send events to the backend and reset the events array
-    setInterval(this.save.bind(this), 1000);
+    setInterval(this.save.bind(this), 5000);
 };
 
 ScreenRecorder.prototype.save = function () {
