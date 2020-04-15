@@ -180,10 +180,10 @@ function SelectInputLogs() {
   WidgetLogs.call(this);
   this.metrics = Object.assign({}, this.metrics, {
                 "widgetType": "SelectInput",
-                "clicks": 0,
-                "keystrokes": 0,
+                //"clicks": 0,
+                //"keystrokes": 0,
                 "optionsSelected": 0,
-                "focusTime": 0,
+                //"focusTime": 0,
                 "optionsDisplayTime": 0
               })
 }
@@ -242,6 +242,8 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
 
     this.datepickerClicks = new DatepickerClicks(this);
     this.datepickerSelections = new DatepickerSelections(this);
+    this.optionsDisplayTime = new SelectOptionsDisplayTime(this);
+    this.optionsSelected = new OptionsSelected(this);
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
@@ -256,7 +258,6 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
             this.widgets[metricId] = new (this.loggers[loggerName])().getMetrics();
         }
         else {
-          console.log(anElement);
           this.widgets[metricId] = new WidgetLogs().getMetrics();
         }
         this.widgets[metricId].id = metricId;
@@ -315,6 +316,8 @@ MicroMetricLogger.prototype.startLogging = function () {
 
     this.datepickerClicks.setUp();
     this.datepickerSelections.setUp();
+    this.optionsDisplayTime.setUp();
+    this.optionsSelected.setUp();
 }
 
 MicroMetricLogger.prototype.stopLogging = function () {
@@ -333,6 +336,8 @@ MicroMetricLogger.prototype.stopLogging = function () {
 
   this.datepickerClicks.tearDown();
   this.datepickerSelections.tearDown();
+  this.optionsDisplayTime.tearDown();
+  this.optionsSelected.tearDown();
 
   document.querySelectorAll('[data-metric-id]').forEach(function(element){element.removeAttribute('data-metric-id')});
   console.log(this.widgets);
@@ -390,7 +395,8 @@ function withinWidgetSurroundings(point, widget) {
 class MicroMetric {
   constructor(logger){
     this.microMetricLogger = logger;
-    this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], select, a";
+    this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], a";
+    //this.targetElementsSelector = "div[widget-type='select']";
   }
   
   getTargetWidget = function (point) {
@@ -407,7 +413,7 @@ class MicroMetric {
 class FocusTime extends MicroMetric {
   constructor(logger){
     super(logger);
-    this.targetElements = "input[widget-type='text'], input[widget-type='radio'], select";
+    this.targetElements = "input[widget-type='text'], input[widget-type='radio']";
     this.focusHandler = this.focusHandler.bind(this);
     this.blurHandler = this.blurHandler.bind(this);
     this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
@@ -1043,4 +1049,65 @@ class DatepickerSelections extends DatepickerMicroMetric {
             this.microMetricLogger.logWidget(this.currentWidget);
         }
     }
+}
+
+class SelectOptionsDisplayTime extends MicroMetric {
+
+    constructor(logger) {
+        super(logger);
+        this.optionsDisplayed = false;
+        this.onClick = this.onClick.bind(this);
+        this.onChange = this.onChange.bind(this);
+    }
+
+    setUp() {
+        addEventListener("div[widget-type='select'] .title", "click", this.onClick);
+        addEventListener("div[widget-type='select']", "change", this.onChange);
+    }
+
+    tearDown() {
+        removeEventListener("div[widget-type='select'] .title", "click", this.onClick);
+        removeEventListener("div[widget-type='select']", "change", this.onChange);
+    }
+
+    onClick(event) {
+        if (!this.optionsDisplayed) {
+            this.startTime = event.timeStamp;
+        }
+        else {
+            this.logOptionsDisplayTime();
+        }
+        this.optionsDisplayed = !this.optionsDisplayed;
+    }
+
+    logOptionsDisplayTime() {
+        let displayTime = event.timeStamp - this.startTime;
+        this.microMetricLogger.getWidgetLogs(event.target).optionsDisplayTime += displayTime;
+    }
+
+    onChange() {
+        this.logOptionsDisplayTime();
+        this.optionsDisplayed = false;
+    }
+}
+
+class OptionsSelected extends MicroMetric {
+
+    constructor (logger) {
+        super(logger);
+        this.onChange = this.onChange.bind(this);
+    }
+
+    setUp() {
+        addEventListener("div[widget-type='select']", "change", this.onChange);
+    }
+
+    tearDown() {
+        removeEventListener("div[widget-type='select']", "change", this.onChange);
+    }
+
+    onChange() {
+        this.microMetricLogger.getWidgetLogs(event.target).optionsSelected += 1;
+    }
+
 }

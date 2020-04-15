@@ -63,11 +63,13 @@ class Select {
         this.originalSelect.value = e.target.getAttribute("value");
 
         let originalOptionSelected = Array.from(this.originalSelect.options).filter(option => {
-            return option.getAttribute("value") == e.target.getAttribute("value");
+            return option.getAttribute("value") == e.target.getAttribute("value")
+                || e.target.textContent == option.textContent;
         });
-        this.originalSelect.querySelector("option[selected]").removeAttribute("selected");
+        if (this.originalSelect.querySelector("option[selected]")) {
+            this.originalSelect.querySelector("option[selected]").removeAttribute("selected");
+        }
         originalOptionSelected[0].setAttribute("selected", "selected");
-
-        this.title.dispatchEvent(new Event('change'));
+        this.dropdown.dispatchEvent(new Event('change'));
     }
 }
