@@ -1,36 +1,44 @@
 /************************************************************/
 /****************** HTMLElement Extensions ******************/
+
 /************************************************************/
 function makeid(length) {
-   var result           = '';
-   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-   var charactersLength = characters.length;
-   for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-   }
-   return result;
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
 
-HTMLElement.prototype.distanceToPoint = function(x,y) {
+HTMLElement.prototype.distanceToPoint = function (x, y) {
     let boundingBox = this.getBoundingClientRect();
     let rect = {
-      max:{x: boundingBox.right , y:boundingBox.bottom},
-      min:{x:boundingBox.left, y:boundingBox.top}
+        max: {x: boundingBox.right, y: boundingBox.bottom},
+        min: {x: boundingBox.left, y: boundingBox.top}
     };
-    let point = {x:x,y:y};
+    let point = {x: x, y: y};
     var dx = Math.max(rect.min.x - point.x, 0, point.x - rect.max.x);
     var dy = Math.max(rect.min.y - point.y, 0, point.y - rect.max.y);
-    return Math.sqrt(dx*dx + dy*dy);
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
-HTMLElement.prototype.getAbsoluteBoundingClientRect = function() {
-  var rect = this.getBoundingClientRect();
-  rect.x = rect.left + window.scrollX;
-  rect.y = rect.top + window.scrollY;
-  return rect;
+HTMLElement.prototype.getAbsoluteBoundingClientRect = function () {
+    var rect = this.getBoundingClientRect();
+    rect.x = rect.left + window.scrollX;
+    rect.y = rect.top + window.scrollY;
+    return rect;
 }
 
-DOMRect.prototype.expandWith = function(anotherBoundingBox){
+HTMLElement.prototype.getWidgetSurroundings = function () {
+    margin = 40;
+    const rect = this.getAbsoluteBoundingClientRect();
+    return rect.withPadding(margin);
+
+};
+
+DOMRect.prototype.expandWith = function (anotherBoundingBox) {
     this.left = Math.min(this.left, anotherBoundingBox.left);
     this.top = Math.min(this.top, anotherBoundingBox.top);
 
@@ -41,44 +49,48 @@ DOMRect.prototype.expandWith = function(anotherBoundingBox){
     this.width = newRight - this.left;
 }
 
-
-DOMRect.prototype.withPadding = function(padding){
-    return new DOMRect(this.x - padding, this.y - padding, this.width + padding, this.height + padding)
+DOMRect.prototype.withPadding = function (padding) {
+    return new DOMRect(this.x - padding, this.y - padding, this.width + 2 * padding, this.height + 2 * padding)
 }
 
-DOMRect.prototype.includesPoint = function(x, y){
-  return (x >= this.left) && (x <= this.right) && (y >= this.top) && (y <= this.bottom);
+DOMRect.prototype.includesPoint = function (x, y) {
+    return (x >= this.left) && (x <= this.right) && (y >= this.top) && (y <= this.bottom);
 }
 
-allRadios = document.querySelectorAll('input[type="radio"]');
-var radioGroups = [];
-for(let input of allRadios) {
-  currentElementBox = input.getAbsoluteBoundingClientRect();
-  inputX = currentElementBox.x + (currentElementBox.width/2);
-  inputY = currentElementBox.y + (currentElementBox.height/2);
-  allLabels = Array.from(document.getElementsByTagName('label'));
-  closestLabel = allLabels.reduce( (min,current) =>  current.distanceToPoint(inputX,inputY) < min.distanceToPoint(inputX,inputY) ? current : min, allLabels[0] )
-
-  if (typeof(radioGroups[input.name]) == "undefined") {
-    radioGroups[input.name] = {boundingBox: currentElementBox, elements: []};
-  }
-
-  radioGroups[input.name].elements.push(input);
-  radioGroups[input.name].elements.push(closestLabel);
-  radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
-  radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
+Object.prototype.withinWidgetSurroundings = function (widget) {
+    if (!widget) {
+        return false;
+    }
+    var rectangle = widget.getWidgetSurroundings(widget);
+    return rectangle.includesPoint(this.x, this.y);
 }
-console.log(radioGroups);
+
+// intended for debbuging purposes
+function drawBoundingBox(boundingBox) {
+    if (document.querySelector("#currentFocus")) {
+        document.body.removeChild(document.querySelector("#currentFocus"));
+    }
+    var div = document.createElement("div");
+    document.body.appendChild(div);
+    div.id = "currentFocus";
+    div.style.position = "absolute";
+    div.style.zIndex = "9999";
+    div.style.top = boundingBox.top + "px";
+    div.style.left = boundingBox.left + "px";
+    div.style.width = boundingBox.width + "px";
+    div.style.height = boundingBox.height + "px";
+    div.style.border = "1px solid black";
+}
 
 /**
-var selectOpen = null;
-allSelects = document.getElementsByTagName('select');
-for(let select of allSelects) {
+ var selectOpen = null;
+ allSelects = document.getElementsByTagName('select');
+ for(let select of allSelects) {
   select.addEventListener("mousedown", selectListener);
   select.addEventListener("change", changeListener);
 }
 
-function selectListener(e){
+ function selectListener(e){
   e.stopPropagation();
   let select = e.target;
   let selectBox = e.target.getAbsoluteBoundingClientRect();
@@ -105,13 +117,13 @@ function selectListener(e){
   selectOpen = select;
 }
 
-function changeListener(e){
+ function changeListener(e){
   selectOpen = null;
   var options = document.getElementById(e.target.optionsId);
   document.body.removeChild(options);
 }
 
-document.addEventListener("mousedown", function(e){
+ document.addEventListener("mousedown", function(e){
   if (selectOpen!=null) {
     var options = document.getElementById(selectOpen.optionsId);
     document.body.removeChild(options);
@@ -121,6 +133,7 @@ document.addEventListener("mousedown", function(e){
 }) */
 /************************************************************/
 /****************** End HTMLElement Extensions **************/
+
 /************************************************************/
 
 function initializeWidgetTypes() {
@@ -138,64 +151,68 @@ function initializeWidgetTypes() {
         }
     }
 }
+
 initializeWidgetTypes();
 
 
-function WidgetLogs () {
-  this.metrics = {
-    "id": null,
-    "url": window.location.href,
-    "authorId": "",
-    "volunteer": "",
-    "interactions": 0,
-    "hoverAndBack": 0,
-    "exitAndBack": 0,
-		"inputSwitches": 0,
-    "mouseTraceLength": 0,
-    "timestamp": new Date().getTime(),
-    "mouseDwellTime": 0
-  }
+function WidgetLogs() {
+    this.metrics = {
+        "id": null,
+        "url": window.location.href,
+        "authorId": "",
+        "volunteer": "",
+        "interactions": 0,
+        "hoverAndBack": 0,
+        "exitAndBack": 0,
+        "inputSwitches": 0,
+        "mouseTraceLength": 0,
+        "timestamp": new Date().getTime(),
+        "mouseDwellTime": 0
+    }
 }
 
 WidgetLogs.prototype.getMetrics = function () {
-  return this.metrics;
+    return this.metrics;
 }
 
 function TextInputLogs() {
     WidgetLogs.call(this);
-    this.metrics = Object.assign({ }, this.metrics, {
-                "widgetType": "TextInput",
-                "typingLatency": 0,
-                "typingSpeed": 0,
-                "typingVariance": null,
-                "focusTime": 0,
-                "correctionAmount": 0,
-                "mouseTraceLength": 0,
-                "typingIntervals": []
+    this.metrics = Object.assign({}, this.metrics, {
+        "widgetType": "TextInput",
+        "typingLatency": 0,
+        "typingSpeed": 0,
+        "typingVariance": null,
+        "focusTime": 0,
+        "correctionAmount": 0,
+        "mouseTraceLength": 0,
+        "typingIntervals": []
     });
 }
+
 TextInputLogs.prototype = Object.create(WidgetLogs.prototype);
 
 function SelectInputLogs() {
-  WidgetLogs.call(this);
-  this.metrics = Object.assign({}, this.metrics, {
-                "widgetType": "SelectInput",
-                //"clicks": 0,
-                //"keystrokes": 0,
-                "optionsSelected": 0,
-                //"focusTime": 0,
-                "optionsDisplayTime": 0
-              })
+    WidgetLogs.call(this);
+    this.metrics = Object.assign({}, this.metrics, {
+        "widgetType": "SelectInput",
+        //"clicks": 0,
+        //"keystrokes": 0,
+        "optionsSelected": 0,
+        //"focusTime": 0,
+        "optionsDisplayTime": 0
+    })
 }
+
 SelectInputLogs.prototype = Object.create(WidgetLogs.prototype);
 
 function AnchorLogs() {
-  WidgetLogs.call(this);
-  this.metrics = Object.assign({}, this.metrics, {
-                "widgetType": "Anchor",
-                "misclicks": 0,
-              })
+    WidgetLogs.call(this);
+    this.metrics = Object.assign({}, this.metrics, {
+        "widgetType": "Anchor",
+        "misclicks": 0,
+    })
 }
+
 AnchorLogs.prototype = Object.create(WidgetLogs.prototype);
 
 function DatepickerLogs() {
@@ -206,6 +223,7 @@ function DatepickerLogs() {
         "clicks": 0
     })
 }
+
 DatepickerLogs.prototype = Object.create(WidgetLogs.prototype);
 
 function RadioSetLogs() {
@@ -217,6 +235,7 @@ function RadioSetLogs() {
         "clicks": 0
     })
 }
+
 RadioSetLogs.prototype = Object.create(WidgetLogs.prototype);
 
 function MicroMetricLogger(screencastId, volunteerName, serverURL) {
@@ -225,7 +244,13 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.serverURL = serverURL;
     this.widgets = {};
     this.nextID = 0;
-    this.loggers = { text: TextInputLogs, select: SelectInputLogs, a: AnchorLogs, datepicker: DatepickerLogs, radioset: RadioSetLogs};
+    this.loggers = {
+        text: TextInputLogs,
+        select: SelectInputLogs,
+        a: AnchorLogs,
+        datepicker: DatepickerLogs,
+        radioset: RadioSetLogs
+    };
 
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
@@ -244,10 +269,12 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.datepickerSelections = new DatepickerSelections(this);
     this.optionsDisplayTime = new SelectOptionsDisplayTime(this);
     this.optionsSelected = new OptionsSelected(this);
+    this.radiosetMisClick = new RadioSetMisClick(this);
+    this.radiosetSelection = new RadioSetSelection(this);
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
-  metricId = anElement.getAttribute("data-metric-id");
+    metricId = anElement.getAttribute("data-metric-id");
     if (!metricId) {
         anElement.setAttribute("data-metric-id", this.getNextID());
         metricId = anElement.getAttribute("data-metric-id");
@@ -258,7 +285,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
             this.widgets[metricId] = new (this.loggers[loggerName])().getMetrics();
         }
         else {
-          this.widgets[metricId] = new WidgetLogs().getMetrics();
+            this.widgets[metricId] = new WidgetLogs().getMetrics();
         }
         this.widgets[metricId].id = metricId;
         this.widgets.volunteer = this.volunteer;
@@ -318,428 +345,442 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.datepickerSelections.setUp();
     this.optionsDisplayTime.setUp();
     this.optionsSelected.setUp();
+    this.radiosetMisClick.setUp();
+    this.radiosetSelection.setUp();
 }
 
 MicroMetricLogger.prototype.stopLogging = function () {
-  this.focusTime.tearDown();
-  this.typingLatency.tearDown();
-  this.typingSpeed.tearDown();
-  this.typingVariance.tearDown();
-  this.correctionAmount.tearDown();
-  this.mouseTraceLength.tearDown();
-  this.mouseDwellTime.tearDown();
-  this.hoverAndBack.tearDown();
-  this.misClick.tearDown();
-  this.inputSwitch.tearDown();
-  this.interactions.tearDown();
-  this.hoverToFirstSelection.tearDown();
+    this.focusTime.tearDown();
+    this.typingLatency.tearDown();
+    this.typingSpeed.tearDown();
+    this.typingVariance.tearDown();
+    this.correctionAmount.tearDown();
+    this.mouseTraceLength.tearDown();
+    this.mouseDwellTime.tearDown();
+    this.hoverAndBack.tearDown();
+    this.misClick.tearDown();
+    this.inputSwitch.tearDown();
+    this.interactions.tearDown();
+    this.hoverToFirstSelection.tearDown();
 
-  this.datepickerClicks.tearDown();
-  this.datepickerSelections.tearDown();
-  this.optionsDisplayTime.tearDown();
-  this.optionsSelected.tearDown();
+    this.datepickerClicks.tearDown();
+    this.datepickerSelections.tearDown();
+    this.optionsDisplayTime.tearDown();
+    this.optionsSelected.tearDown();
+    this.radiosetMisClick.tearDown();
+    this.radiosetSelection.tearDown();
 
-  document.querySelectorAll('[data-metric-id]').forEach(function(element){element.removeAttribute('data-metric-id')});
-  console.log(this.widgets);
-  browser.runtime.sendMessage({"message": "sendLogs", "url": this.serverURL, "logs": {"metrics": this.widgets, "screencastId": this.screencastId}});
-  this.screencastId = null;
-  this.volunteerName = null;
+    document.querySelectorAll('[data-metric-id]').forEach(function (element) {
+        element.removeAttribute('data-metric-id')
+    });
+    console.log(this.widgets);
+    browser.runtime.sendMessage({
+        "message": "sendLogs",
+        "url": this.serverURL,
+        "logs": {"metrics": this.widgets, "screencastId": this.screencastId}
+    });
+    this.screencastId = null;
+    this.volunteerName = null;
+}
+
+MicroMetricLogger.prototype.getRadioGroups = function () {
+    if (!this.radioGroups) {
+        this.radioGroups = [];
+        allRadios = document.querySelectorAll('input[type="radio"]');
+        for (let input of allRadios) {
+            currentElementBox = input.getAbsoluteBoundingClientRect();
+            inputX = currentElementBox.x + (currentElementBox.width / 2);
+            inputY = currentElementBox.y + (currentElementBox.height / 2);
+            allLabels = Array.from(document.getElementsByTagName('label'));
+            closestLabel = allLabels.reduce((min, current) => current.distanceToPoint(inputX, inputY) < min.distanceToPoint(inputX, inputY) ? current : min, allLabels[0])
+
+            if (typeof(this.radioGroups[input.name]) == "undefined") {
+                this.radioGroups[input.name] = new RadioGroup(currentElementBox);
+            }
+
+            this.radioGroups[input.name].elements.push(input);
+            this.radioGroups[input.name].elements.push(closestLabel);
+            this.radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
+            this.radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
+        }
+    }
+    return this.radioGroups;
 }
 
 
 function addEventListener(selector, eventName, handler) {
     var targetElements = document.querySelectorAll(selector);
-    for(var i=0; i < targetElements.length; i++) {
+    for (var i = 0; i < targetElements.length; i++) {
         targetElements[i].addEventListener(eventName, handler);
     }
 }
 
-function removeEventListener (selector, eventName, handler) {
+function removeEventListener(selector, eventName, handler) {
     var targetElements = document.querySelectorAll(selector);
-    for(var i=0; i < targetElements.length; i++) {
+    for (var i = 0; i < targetElements.length; i++) {
         targetElements[i].removeEventListener(eventName, handler);
     }
-}
-
-function getWidgetSurroundings(el) {
-  margin = 40;
-  const rect = el.getBoundingClientRect();
-  const left = rect.left + window.scrollX;
-  const top = rect.top + window.scrollY;
-  const right = rect.right + window.scrollX;
-  const bottom = rect.bottom + window.scrollY;
-  return {
-    topLeft: { x:left - margin, y:top - margin},
-    bottomRight: { x:right + margin, y:bottom + margin}
-  };
-}
-
-function withinWidgetSurroundings(point, widget) {
-  if (!widget) {
-    return false;
-  }
-  var rectangle = getWidgetSurroundings(widget);
-  return (
-            (point.x > rectangle.topLeft.x) && (point.x < rectangle.bottomRight.x) &&
-            (point.y > rectangle.topLeft.y) && (point.y < rectangle.bottomRight.y)
-          )
 }
 
 /********************************************************************************/
 /********                                                                 *******/
 /********                         MICROMETRICS                            *******/
 /********                                                                 *******/
+
 /********************************************************************************/
 
 
 class MicroMetric {
-  constructor(logger){
-    this.microMetricLogger = logger;
-    this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], a";
-    //this.targetElementsSelector = "div[widget-type='select']";
-  }
-  
-  getTargetWidget = function (point) {
-    var targetElements = document.querySelectorAll(this.targetElementsSelector);
-    for(var i=0; i < targetElements.length;i++) {
-      if (withinWidgetSurroundings(point,targetElements[i])) {
-        return targetElements[i];
-      }
+    constructor(logger) {
+        this.microMetricLogger = logger;
+        this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], a";
     }
-    return null;
-  }
+
+    getTargetWidget = function (point) {
+        var radios = Object.keys(this.microMetricLogger.getRadioGroups()).map(key => {
+            return this.microMetricLogger.getRadioGroups()[key]
+        });
+        var targetElements = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(radios);
+        for (var i = 0; i < targetElements.length; i++) {
+            if (point.withinWidgetSurroundings(targetElements[i])) {
+                return targetElements[i];
+            }
+        }
+        return null;
+    }
 }
 
 class FocusTime extends MicroMetric {
-  constructor(logger){
-    super(logger);
-    this.targetElements = "input[widget-type='text'], input[widget-type='radio']";
-    this.focusHandler = this.focusHandler.bind(this);
-    this.blurHandler = this.blurHandler.bind(this);
-    this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-  }
-  
-  setUp(){
-    addEventListener(this.targetElements,"focus", this.focusHandler);
-    addEventListener(this.targetElements,"blur", this.blurHandler);
-    document.addEventListener("mousemove", this.mouseMoveHandler);
-  }
-  
-  tearDown(){
-    removeEventListener(this.targetElements,"focus", this.focusHandler);
-    removeEventListener(this.targetElements,"blur", this.blurHandler);
-    document.removeEventListener("mousemove", this.mouseMoveHandler);
-  }
-  
-  focusHandler(event) {
-      this.currentWidget = event.target;
-      this.startTime = event.timeStamp;
-  }
-  
-  blurHandler(event) {
-      if (!this.currentWidget) {
-          return null;
-      }
-      if (this.mouseBlur) {
-        console.log("Mouse blur");
-      }
-      else {
-        this.blurTime = event.timeStamp;
-        console.log("Real blur");
-        this.focusTime = this.blurTime - this.startTime;
-        this.logFocusTime();
-      }
-  
-  }
-  
-  mouseMoveHandler(event) {
-      if (withinWidgetSurroundings({ x: event.pageX, y: event.pageY},this.currentWidget)) {
-          this.mouseOnCurrentWidget = true;
-          this.mouseBlur = null;
-      }
-      else {
-        if (this.mouseOnCurrentWidget) {
-          this.mouseBlur = event.timeStamp;
-          this.focusTime = this.mouseBlur - this.startTime;
-          this.logFocusTime();
-          this.mouseOnCurrentWidget = false;
+    constructor(logger) {
+        super(logger);
+        this.targetElements = "input[widget-type='text'], input[widget-type='radio']";
+        this.focusHandler = this.focusHandler.bind(this);
+        this.blurHandler = this.blurHandler.bind(this);
+        this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+    }
+
+    setUp() {
+        addEventListener(this.targetElements, "focus", this.focusHandler);
+        addEventListener(this.targetElements, "blur", this.blurHandler);
+        document.addEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    tearDown() {
+        removeEventListener(this.targetElements, "focus", this.focusHandler);
+        removeEventListener(this.targetElements, "blur", this.blurHandler);
+        document.removeEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    focusHandler(event) {
+        this.currentWidget = event.target;
+        this.startTime = event.timeStamp;
+    }
+
+    blurHandler(event) {
+        if (!this.currentWidget) {
+            return null;
         }
-      }
-  }
-  
-  logFocusTime() {
-      this.microMetricLogger.getWidgetLogs(this.currentWidget).focusTime += this.focusTime;
-      this.microMetricLogger.logWidget(this.currentWidget);
-  }
+        if (this.mouseBlur) {
+            console.log("Mouse blur");
+        }
+        else {
+            this.blurTime = event.timeStamp;
+            console.log("Real blur");
+            this.focusTime = this.blurTime - this.startTime;
+            this.logFocusTime();
+        }
+
+    }
+
+    mouseMoveHandler(event) {
+        if ({x: event.pageX, y: event.pageY}.withinWidgetSurroundings(this.currentWidget)) {
+            this.mouseOnCurrentWidget = true;
+            this.mouseBlur = null;
+        }
+        else {
+            if (this.mouseOnCurrentWidget) {
+                this.mouseBlur = event.timeStamp;
+                this.focusTime = this.mouseBlur - this.startTime;
+                this.logFocusTime();
+                this.mouseOnCurrentWidget = false;
+            }
+        }
+    }
+
+    logFocusTime() {
+        this.microMetricLogger.getWidgetLogs(this.currentWidget).focusTime += this.focusTime;
+        this.microMetricLogger.logWidget(this.currentWidget);
+    }
 }
 
 class TypingLatency extends MicroMetric {
-  constructor(logger) {
-    super(logger);
-    this.focusHandler = this.focusHandler.bind(this);
-    this.keyPressHandler = this.keyPressHandler.bind(this);
-  }
-  
-  focusHandler(event) {
-    this.alreadyTyped = false;
-    this.startTime = event.timeStamp;
-  }
-  
-  keyPressHandler(event) {
-    if (!this.alreadyTyped) {
-        this.typingLatency = event.timeStamp - this.startTime;
-        this.microMetricLogger.getWidgetLogs(event.target).typingLatency += this.typingLatency;
-        this.alreadyTyped = true;
+    constructor(logger) {
+        super(logger);
+        this.focusHandler = this.focusHandler.bind(this);
+        this.keyPressHandler = this.keyPressHandler.bind(this);
     }
-  }
-  
-  setUp() {
-    addEventListener("input[widget-type='text']", "focus", this.focusHandler);
-    addEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
-  }
-  
-  tearDown() {
-    removeEventListener("input[widget-type='text']", "focus", this.focusHandler);
-    removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
-  }
+
+    focusHandler(event) {
+        this.alreadyTyped = false;
+        this.startTime = event.timeStamp;
+    }
+
+    keyPressHandler(event) {
+        if (!this.alreadyTyped) {
+            this.typingLatency = event.timeStamp - this.startTime;
+            this.microMetricLogger.getWidgetLogs(event.target).typingLatency += this.typingLatency;
+            this.alreadyTyped = true;
+        }
+    }
+
+    setUp() {
+        addEventListener("input[widget-type='text']", "focus", this.focusHandler);
+        addEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+    }
+
+    tearDown() {
+        removeEventListener("input[widget-type='text']", "focus", this.focusHandler);
+        removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+    }
 }
 
 class TypingSpeed extends MicroMetric {
-  constructor(logger) {
-    super(logger);
-    this.keyPressHandler = this.keyPressHandler.bind(this);
-    this.blurHandler = this.blurHandler.bind(this);
-    this.charsTyped = 0;
-  }
+    constructor(logger) {
+        super(logger);
+        this.keyPressHandler = this.keyPressHandler.bind(this);
+        this.blurHandler = this.blurHandler.bind(this);
+        this.charsTyped = 0;
+    }
 
-  setUp() {
-    addEventListener("input[widget-type='text']","keypress", this.keyPressHandler);
-    addEventListener("input[widget-type='text']", "blur", this.blurHandler);
-  }
-  
-  tearDown() {
-    removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
-    removeEventListener("input[widget-type='text']", "blur", this.blurHandler);
-  }
-  
-  keyPressHandler(event) {
-    if (this.charsTyped == 0) {
-      this.startTime = event.timeStamp;
+    setUp() {
+        addEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+        addEventListener("input[widget-type='text']", "blur", this.blurHandler);
     }
-    this.charsTyped++;
-  }
-  
-  blurHandler(event) {
-    if (this.charsTyped > 0) {
-      this.typingSpeed = (event.timeStamp - this.startTime) / this.charsTyped;
-      this.microMetricLogger.getWidgetLogs(event.target).typingSpeed += this.typingSpeed;
-      this.charsTyped = 0;
+
+    tearDown() {
+        removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+        removeEventListener("input[widget-type='text']", "blur", this.blurHandler);
     }
-  }
+
+    keyPressHandler(event) {
+        if (this.charsTyped == 0) {
+            this.startTime = event.timeStamp;
+        }
+        this.charsTyped++;
+    }
+
+    blurHandler(event) {
+        if (this.charsTyped > 0) {
+            this.typingSpeed = (event.timeStamp - this.startTime) / this.charsTyped;
+            this.microMetricLogger.getWidgetLogs(event.target).typingSpeed += this.typingSpeed;
+            this.charsTyped = 0;
+        }
+    }
 }
 
 class TypingVariance extends MicroMetric {
-  constructor(logger) {
-    super(logger);
-    this.keyPressHandler = this.keyPressHandler.bind(this);
-    this.blurHandler = this.blurHandler.bind(this);
-    this.lastKeypressTimestamp = 0;
-  }
+    constructor(logger) {
+        super(logger);
+        this.keyPressHandler = this.keyPressHandler.bind(this);
+        this.blurHandler = this.blurHandler.bind(this);
+        this.lastKeypressTimestamp = 0;
+    }
 
-  setUp() {
-    addEventListener("input[widget-type='text']","keypress", this.keyPressHandler);
-    addEventListener("input[widget-type='text']", "blur", this.blurHandler);
-  }
-  
-  tearDown() {
-    removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
-    removeEventListener("input[widget-type='text']", "blur", this.blurHandler);
-  }
-  
-  keyPressHandler(event) {
-    if (this.lastKeypressTimestamp != 0) {
-        var switchingTime = event.timeStamp;
-        var intraKeypressInterval = switchingTime - this.lastKeypressTimestamp;
-        this.microMetricLogger.getWidgetLogs(event.target).typingIntervals.push(intraKeypressInterval);
+    setUp() {
+        addEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+        addEventListener("input[widget-type='text']", "blur", this.blurHandler);
     }
-    this.lastKeypressTimestamp = event.timeStamp;
-  }
-  
-  standardDeviation(typingIntervals) {
-    if (typingIntervals.length == 0) {
-        return null;
+
+    tearDown() {
+        removeEventListener("input[widget-type='text']", "keypress", this.keyPressHandler);
+        removeEventListener("input[widget-type='text']", "blur", this.blurHandler);
     }
-    var total = 0;
-    var total_power_of_two = 0;
-    for (var i=0; i < typingIntervals.length;i++) {
-        total += typingIntervals[i];
-        total_power_of_two += Math.pow(typingIntervals[i], 2);
-    };
-    var media = total / typingIntervals.length;
-    var variance = (total_power_of_two / typingIntervals.length) - Math.pow(media, 2);
-    return Math.pow(variance, 1 / 2);
-  }
-  
-  blurHandler(event) {
-    var variance = this.standardDeviation(this.microMetricLogger.getWidgetLogs(event.target).typingIntervals);
-    this.microMetricLogger.getWidgetLogs(event.target).typingVariance = variance;
-    this.lastKeypressTimestamp = 0;
-  } 
+
+    keyPressHandler(event) {
+        if (this.lastKeypressTimestamp != 0) {
+            var switchingTime = event.timeStamp;
+            var intraKeypressInterval = switchingTime - this.lastKeypressTimestamp;
+            this.microMetricLogger.getWidgetLogs(event.target).typingIntervals.push(intraKeypressInterval);
+        }
+        this.lastKeypressTimestamp = event.timeStamp;
+    }
+
+    standardDeviation(typingIntervals) {
+        if (typingIntervals.length == 0) {
+            return null;
+        }
+        var total = 0;
+        var total_power_of_two = 0;
+        for (var i = 0; i < typingIntervals.length; i++) {
+            total += typingIntervals[i];
+            total_power_of_two += Math.pow(typingIntervals[i], 2);
+        }
+        ;
+        var media = total / typingIntervals.length;
+        var variance = (total_power_of_two / typingIntervals.length) - Math.pow(media, 2);
+        return Math.pow(variance, 1 / 2);
+    }
+
+    blurHandler(event) {
+        var variance = this.standardDeviation(this.microMetricLogger.getWidgetLogs(event.target).typingIntervals);
+        this.microMetricLogger.getWidgetLogs(event.target).typingVariance = variance;
+        this.lastKeypressTimestamp = 0;
+    }
 }
 
 class CorrectionAmount extends MicroMetric {
-  constructor(logger) {
-    super(logger);
-    this.keyDownHandler = this.keyDownHandler.bind(this);
-  }
-  
-  setUp() {
-    addEventListener("input[widget-type='text']","keydown", this.keyDownHandler);
-  }
-  
-  tearDown() {
-    removeEventListener("input[widget-type='text']", "keydown", this.keyDownHandler);
-  }
-  
-  keyDownHandler(event) {
-    if (event.keyCode === 8) {
-      this.microMetricLogger.getWidgetLogs(event.target).correctionAmount++;
+    constructor(logger) {
+        super(logger);
+        this.keyDownHandler = this.keyDownHandler.bind(this);
     }
-  }
+
+    setUp() {
+        addEventListener("input[widget-type='text']", "keydown", this.keyDownHandler);
+    }
+
+    tearDown() {
+        removeEventListener("input[widget-type='text']", "keydown", this.keyDownHandler);
+    }
+
+    keyDownHandler(event) {
+        if (event.keyCode === 8) {
+            this.microMetricLogger.getWidgetLogs(event.target).correctionAmount++;
+        }
+    }
 }
 
 class MouseTraceLength extends MicroMetric {
-  constructor(logger) {
-    super(logger);
-    this.currentWidget = null;
-    this.lastWidget = null;
-    this.lastTop = null;
-    this.lastLeft = null;
-    this.mouseTraceLength = 0;
-    this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-  }
-  
-  setUp() {
-    document.addEventListener("mousemove", this.mouseMoveHandler);
-  }
-  
-  tearDown() {
-    document.removeEventListener("mousemove", this.mouseMoveHandler);
-  }
-
-  mouseMoveHandler(event) {
-      this.currentWidget = this.getTargetWidget({ x:event.pageX, y:event.pageY});
-      if (this.currentWidget != this.lastWidget) {
-        if (this.lastWidget) {
-          //console.log("Trace length " + this.mouseTraceLength, "on ", this.lastWidget);
-          this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseTraceLength += this.mouseTraceLength;
-        }
-        this.lastTop = event.pageY;
-        this.lastLeft = event.pageX;
+    constructor(logger) {
+        super(logger);
+        this.currentWidget = null;
+        this.lastWidget = null;
+        this.lastTop = null;
+        this.lastLeft = null;
         this.mouseTraceLength = 0;
-        this.lastWidget = this.currentWidget;
-      }
-      var delta = Math.round(
-                      Math.sqrt(
-                        Math.pow(this.lastTop - event.pageY, 2) +
-                        Math.pow(this.lastLeft - event.pageX, 2)
-                      )
-                    );
-      this.mouseTraceLength += delta;
-      /*lastTop = event.pageY;
-      lastLeft = event.pageX;*/
-  }
+        this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+    }
+
+    setUp() {
+        document.addEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    tearDown() {
+        document.removeEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    mouseMoveHandler(event) {
+        this.currentWidget = this.getTargetWidget({x: event.pageX, y: event.pageY});
+        if (this.currentWidget != this.lastWidget) {
+            if (this.lastWidget) {
+                //console.log("Trace length " + this.mouseTraceLength, "on ", this.lastWidget);
+                this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseTraceLength += this.mouseTraceLength;
+            }
+            this.lastTop = event.pageY;
+            this.lastLeft = event.pageX;
+            this.mouseTraceLength = 0;
+            this.lastWidget = this.currentWidget;
+        }
+        var delta = Math.round(
+            Math.sqrt(
+                Math.pow(this.lastTop - event.pageY, 2) +
+                Math.pow(this.lastLeft - event.pageX, 2)
+            )
+        );
+        this.mouseTraceLength += delta;
+        /*lastTop = event.pageY;
+        lastLeft = event.pageX;*/
+    }
 }
 
 class MouseDwellTime extends MicroMetric {
-  constructor(logger) {
-    super(logger);
-    this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-    this.lastWidget = null;
-    this.lastTimestamp = null;
-  }
-  
-  setUp() {
-    document.addEventListener("mousemove", this.mouseMoveHandler);
-  }
-  
-  tearDown() {
-    document.removeEventListener("mousemove", this.mouseMoveHandler);
-  }
-
-  mouseMoveHandler(event) {
-    this.currentWidget = this.getTargetWidget({ x:event.pageX, y:event.pageY});
-    if (this.currentWidget != this.lastWidget) {
-      var now = event.timeStamp;
-      if (this.lastWidget) {
-          var dwellTime = now - this.lastTimestamp;
-          this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
-      }
-      this.lastWidget = this.currentWidget;
-      this.lastTimestamp = now;
+    constructor(logger) {
+        super(logger);
+        this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+        this.lastWidget = null;
+        this.lastTimestamp = null;
     }
-  }
+
+    setUp() {
+        document.addEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    tearDown() {
+        document.removeEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    mouseMoveHandler(event) {
+        this.currentWidget = this.getTargetWidget({x: event.pageX, y: event.pageY});
+        if (this.currentWidget != this.lastWidget) {
+            var now = event.timeStamp;
+            if (this.lastWidget) {
+                var dwellTime = now - this.lastTimestamp;
+                this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
+            }
+            this.lastWidget = this.currentWidget;
+            this.lastTimestamp = now;
+        }
+    }
 }
 
 class Interactions extends MicroMetric {
-	constructor(logger) {
-		super(logger);
-    this.targetElementsSelector = "input[widget-type='text'],select,input[widget-type='datepicker']";
-    this.focusHandler = this.focusHandler.bind(this);
-  }
-  
-  setUp() {
-    addEventListener(this.targetElementsSelector, "focus", this.focusHandler);
-  }
-  
-  tearDown() {
-    removeEventListener(this.targetElementsSelector, "focus", this.focusHandler);
-  }
+    constructor(logger) {
+        super(logger);
+        this.targetElementsSelector = "input[widget-type='text'],select,input[widget-type='datepicker']";
+        this.focusHandler = this.focusHandler.bind(this);
+    }
 
-  focusHandler(event) {
-    this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
-    console.log("interactions ", this.microMetricLogger.getWidgetLogs(event.target).interactions);
-  }
+    setUp() {
+        addEventListener(this.targetElementsSelector, "focus", this.focusHandler);
+    }
+
+    tearDown() {
+        removeEventListener(this.targetElementsSelector, "focus", this.focusHandler);
+    }
+
+    focusHandler(event) {
+        this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
+        console.log("interactions ", this.microMetricLogger.getWidgetLogs(event.target).interactions);
+    }
 }
 
 class MisClick extends MicroMetric {
     constructor(logger) {
-      	super(logger);
+        super(logger);
         this._toleranceDistance = 10;
         this.handler = this.handler.bind(this);
     }
 
     setUp() {
-      document.addEventListener("click", this.handler);
+        document.addEventListener("click", this.handler);
     }
 
     tearDown() {
-      document.removeEventListener("click", this.handler);
+        document.removeEventListener("click", this.handler);
     }
 
-    toleranceDistance(){
-      return this._toleranceDistance;
+    toleranceDistance() {
+        return this._toleranceDistance;
     }
 
-    handler(event){
-      let anchors = document.querySelectorAll('a');
-      for(let anchor of anchors){
-        if (this.isCloseTo(event.clientX, event.clientY, anchor)) {
-          this.microMetricLogger.getWidgetLogs(anchor).misclicks++;
-          console.log(this.microMetricLogger.getWidgetLogs(anchor));
+    handler(event) {
+        let anchors = document.querySelectorAll('a');
+        for (let anchor of anchors) {
+            if (this.isCloseTo(event.clientX, event.clientY, anchor)) {
+                this.microMetricLogger.getWidgetLogs(anchor).misclicks++;
+                console.log(this.microMetricLogger.getWidgetLogs(anchor));
+            }
         }
-      }
     }
 
-    isCloseTo(x, y, element){
-      return element.distanceToPoint(x,y) < this.toleranceDistance();
+    isCloseTo(x, y, element) {
+        return element.distanceToPoint(x, y) < this.toleranceDistance();
     }
 
 }
 
 class HoverAndBack extends MicroMetric {
     constructor(logger) {
-      	super(logger);
+        super(logger);
         this._toleranceMs = 500;
         this._currentTrace = null;
         this._lastTrace = null;
@@ -750,99 +791,103 @@ class HoverAndBack extends MicroMetric {
     }
 
     setUp() {
-      document.addEventListener("mousemove", this.handler);
+        document.addEventListener("mousemove", this.handler);
     }
 
     tearDown() {
-      document.removeEventListener("mousemove", this.handler);
+        document.removeEventListener("mousemove", this.handler);
     }
 
-    minimumTraceLength(){
-      return this._minimumTraceLength;
-    }
-    timeout(){
-      return this._timeout;
-    }
-    toleranceMs(){
-      return this._toleranceMs;
-    }
-    currentTrace(){
-      return this._currentTrace;
-    }
-    lastTrace(){
-      return this._lastTrace;
+    minimumTraceLength() {
+        return this._minimumTraceLength;
     }
 
-    handler( event ) {
-       clearTimeout(this.timeout());
-       if (this.currentTrace() == null) this._currentTrace = new Trace();
-       this.currentTrace().addPoint({ x: event.clientX, y: event.clientY});
-       this._timeout = setTimeout(this.stoppedMoving, this.toleranceMs());
+    timeout() {
+        return this._timeout;
     }
 
-    stoppedMoving(){
-      if (this.currentTrace() != null && this.currentTrace().traceLenght() > this.minimumTraceLength()) {
-        this.currentTrace().close();
-        if (this.lastTrace() != null) {
-          var pathAngle = this.lastTrace().angleWith(this.currentTrace());
-          if(this.currentTrace().straightness()>0.8 && Math.abs(pathAngle)<40) {
-            var targetElement = document.elementsFromPoint(this.lastTrace().endPoint().x,this.lastTrace().endPoint().y)[0];
-						if (targetElement.tagName == "INPUT" || targetElement.tagName == "SELECT" || targetElement.tagName == "A") {
-								this.microMetricLogger.getWidgetLogs(targetElement).hoverAndBack++;
-						}
-            var startElement = document.elementsFromPoint(this.lastTrace().startPoint().x,this.lastTrace().startPoint().y)[0];
-            var endElement = document.elementsFromPoint(this.currentTrace().endPoint().x,this.currentTrace().endPoint().y)[0];
-            if ((startElement.tagName == "INPUT" || startElement.tagName == "SELECT" || targetElement.tagName == "A") && (startElement == endElement))
-              this.microMetricLogger.getWidgetLogs(startElement).exitAndBack++;
-          }
+    toleranceMs() {
+        return this._toleranceMs;
+    }
+
+    currentTrace() {
+        return this._currentTrace;
+    }
+
+    lastTrace() {
+        return this._lastTrace;
+    }
+
+    handler(event) {
+        clearTimeout(this.timeout());
+        if (this.currentTrace() == null) this._currentTrace = new Trace();
+        this.currentTrace().addPoint({x: event.clientX, y: event.clientY});
+        this._timeout = setTimeout(this.stoppedMoving, this.toleranceMs());
+    }
+
+    stoppedMoving() {
+        if (this.currentTrace() != null && this.currentTrace().traceLenght() > this.minimumTraceLength()) {
+            this.currentTrace().close();
+            if (this.lastTrace() != null) {
+                var pathAngle = this.lastTrace().angleWith(this.currentTrace());
+                if (this.currentTrace().straightness() > 0.8 && Math.abs(pathAngle) < 40) {
+                    var targetElement = document.elementsFromPoint(this.lastTrace().endPoint().x, this.lastTrace().endPoint().y)[0];
+                    if (targetElement.tagName == "INPUT" || targetElement.tagName == "SELECT" || targetElement.tagName == "A") {
+                        this.microMetricLogger.getWidgetLogs(targetElement).hoverAndBack++;
+                    }
+                    var startElement = document.elementsFromPoint(this.lastTrace().startPoint().x, this.lastTrace().startPoint().y)[0];
+                    var endElement = document.elementsFromPoint(this.currentTrace().endPoint().x, this.currentTrace().endPoint().y)[0];
+                    if ((startElement.tagName == "INPUT" || startElement.tagName == "SELECT" || targetElement.tagName == "A") && (startElement == endElement))
+                        this.microMetricLogger.getWidgetLogs(startElement).exitAndBack++;
+                }
+            }
+            this._lastTrace = this.currentTrace();
+            this._currentTrace = null;
         }
-        this._lastTrace = this.currentTrace();
-        this._currentTrace = null;
-      }
     }
 
 }
 
 class InputSwitch extends MicroMetric {
-  constructor(logger) {
-    	super(logger);
-			this.currentWidget = null;
-			this.lastAction = null;
-			this.focusHandler = this.focusHandler.bind(this);
-			this.keypressHandler = this.keypressHandler.bind(this);
-			this.mousemoveHandler = this.mousemoveHandler.bind(this);
-	}
+    constructor(logger) {
+        super(logger);
+        this.currentWidget = null;
+        this.lastAction = null;
+        this.focusHandler = this.focusHandler.bind(this);
+        this.keypressHandler = this.keypressHandler.bind(this);
+        this.mousemoveHandler = this.mousemoveHandler.bind(this);
+    }
 
-  setUp() {
-		addEventListener("input[widget-type='text']", "focus", this.focusHandler);
-		addEventListener("input[widget-type='text']", "keypress", this.keypressHandler);
-		document.addEventListener("mousemove", this.mousemoveHandler);
-  }
+    setUp() {
+        addEventListener("input[widget-type='text']", "focus", this.focusHandler);
+        addEventListener("input[widget-type='text']", "keypress", this.keypressHandler);
+        document.addEventListener("mousemove", this.mousemoveHandler);
+    }
 
-  tearDown() {
-    removeEventListener("input[widget-type='text']", "focus", this.focusHandler);
-    removeEventListener("input[widget-type='text']", "keypress", this.keypressHandler);
-    document.removeEventListener("mousemove", this.mousemoveHandler);
-  }
+    tearDown() {
+        removeEventListener("input[widget-type='text']", "focus", this.focusHandler);
+        removeEventListener("input[widget-type='text']", "keypress", this.keypressHandler);
+        document.removeEventListener("mousemove", this.mousemoveHandler);
+    }
 
-	focusHandler( event ) {
-			this.lastAction = null;
-			this.currentWidget = event.target;
-	}
+    focusHandler(event) {
+        this.lastAction = null;
+        this.currentWidget = event.target;
+    }
 
-	keypressHandler( event ) {
-			if (this.lastAction == "mousemove") {
-				this.microMetricLogger.getWidgetLogs(this.currentWidget).inputSwitches++;
-			}
-			this.lastAction = "keypress";
-	}
+    keypressHandler(event) {
+        if (this.lastAction == "mousemove") {
+            this.microMetricLogger.getWidgetLogs(this.currentWidget).inputSwitches++;
+        }
+        this.lastAction = "keypress";
+    }
 
-	mousemoveHandler( event ) {
-		if (this.lastAction == "keypress") {
-			this.microMetricLogger.getWidgetLogs(this.currentWidget).inputSwitches++;
-		}
-		this.lastAction = "mousemove";
-	}
+    mousemoveHandler(event) {
+        if (this.lastAction == "keypress") {
+            this.microMetricLogger.getWidgetLogs(this.currentWidget).inputSwitches++;
+        }
+        this.lastAction = "mousemove";
+    }
 }
 
 class Trace {
@@ -853,75 +898,87 @@ class Trace {
         this.traces = [];
         this._traceLength = 0;
     }
-    close(){
-      this._endTimestamp = (new Date()).getTime();
+
+    close() {
+        this._endTimestamp = (new Date()).getTime();
     }
+
     isEmpty() {
         return this._empty;
     }
+
     startTimestamp() {
         return this._startTimestamp;
     }
+
     endTimestamp() {
         return this._endTimestamp;
     }
+
     startPoint() {
         return this.traces[0];
     }
+
     endPoint() {
         return this.traces[this.tracesCount() - 1];
     }
+
     straightLineLength() {
-        return Math.round( Math.sqrt(
-          Math.pow(this.endPoint().y - this.startPoint().y, 2) +
-          Math.pow(this.endPoint().x - this.startPoint().x, 2)
+        return Math.round(Math.sqrt(
+            Math.pow(this.endPoint().y - this.startPoint().y, 2) +
+            Math.pow(this.endPoint().x - this.startPoint().x, 2)
         ));
     }
+
     traceLenght() {
         return this._traceLength;
     }
+
     straightness() {
         return this.straightLineLength() / this.traceLenght();
     }
-    tracesCount(){
+
+    tracesCount() {
         return this.traces.length;
     }
-    addPoint(point){
-        var microTrace = { delta : null , x : point.x , y : point.y };
+
+    addPoint(point) {
+        var microTrace = {delta: null, x: point.x, y: point.y};
         if (this.isEmpty()) {
-          microTrace.delta = 0;
-          this._empty = false;
+            microTrace.delta = 0;
+            this._empty = false;
         }
-        else{
-          microTrace.delta = Math.round( Math.sqrt(
-            Math.pow(this.endPoint().y - point.y, 2) +
-            Math.pow(this.endPoint().x - point.x, 2)
-          ));
+        else {
+            microTrace.delta = Math.round(Math.sqrt(
+                Math.pow(this.endPoint().y - point.y, 2) +
+                Math.pow(this.endPoint().x - point.x, 2)
+            ));
         }
         this._traceLength += microTrace.delta;
         this.traces.push(microTrace);
     }
-    avgSpeed(){
-      return this.traceLenght() / this.tracesCount();
+
+    avgSpeed() {
+        return this.traceLenght() / this.tracesCount();
     }
-    angleWith(otherTrace){
-      var o1 = Math.atan2(this.endPoint().y - this.startPoint().y, this.endPoint().x - this.startPoint().x) * 180 / Math.PI;
-      var o2 = Math.atan2(otherTrace.endPoint().y - otherTrace.startPoint().y, otherTrace.endPoint().x - otherTrace.startPoint().x) * 180 / Math.PI;
-      if (o1>0) {
-        var red = 180 - o1;
-      }
-      else{
-        var red = 180 + o1;
-      }
-      var blue = o2 * (o1 / Math.abs(o1));
-      return red + blue;
+
+    angleWith(otherTrace) {
+        var o1 = Math.atan2(this.endPoint().y - this.startPoint().y, this.endPoint().x - this.startPoint().x) * 180 / Math.PI;
+        var o2 = Math.atan2(otherTrace.endPoint().y - otherTrace.startPoint().y, otherTrace.endPoint().x - otherTrace.startPoint().x) * 180 / Math.PI;
+        if (o1 > 0) {
+            var red = 180 - o1;
+        }
+        else {
+            var red = 180 + o1;
+        }
+        var blue = o2 * (o1 / Math.abs(o1));
+        return red + blue;
     }
 }
 
 class HoverToFirstSelection extends MicroMetric {
     constructor(logger) {
-      	super(logger);
-        this.clickHandler = this.clickHandler.bind(this);
+        super(logger);
         this.moveHandler = this.moveHandler.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this._current = null;
@@ -929,94 +986,127 @@ class HoverToFirstSelection extends MicroMetric {
     }
 
     setUp() {
-      document.addEventListener("mousemove", this.moveHandler);
-      document.addEventListener("click", this.clickHandler);
-      addEventListener("input[type=radio]", "change", this.changeHandler);
+        document.addEventListener("mousemove", this.moveHandler);
+        addEventListener("input[type=radio]", "change", this.changeHandler);
     }
 
     tearDown() {
-      document.removeEventListener("mousemove", this.moveHandler);
-      document.removeEventListener("click", this.clickHandler);
-      removeEventListener("input[type=radio]", "change", this.changeHandler);
+        document.removeEventListener("mousemove", this.moveHandler);
+        removeEventListener("input[type=radio]", "change", this.changeHandler);
     }
 
-    changeHandler( event ) {
-      let radioGroup = radioGroups[event.target.name];
-      this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).selections++;
-      if (this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection == 0)
-        this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).hoverToFirstSelection = (new Date().getTime()) - this._hoverTimestamp;
+    changeHandler(event) {
+        let radioGroup = this.microMetricLogger.getRadioGroups()[event.target.name];
+        if (this.microMetricLogger.getWidgetLogs(radioGroup).hoverToFirstSelection == 0)
+            this.microMetricLogger.getWidgetLogs(radioGroup).hoverToFirstSelection = (new Date().getTime()) - this._hoverTimestamp;
 
     }
 
-    clickHandler( event ) {
-      let point = {
-        x: event.clientX + window.scrollX,
-        y: event.clientY + window.scrollY
-      };
-      Object.keys(radioGroups).forEach(function(radioGroupName, index) {
-        let radioGroup = radioGroups[radioGroupName];
-        if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
-          if (this._current == radioGroupName) {
-            this.microMetricLogger.getWidgetLogs(radioGroup.elements[0]).clicks++;
-          }
-        }
-      }, this);
-    }
+    moveHandler(event) {
+        let point = {
+            x: event.clientX + window.scrollX,
+            y: event.clientY + window.scrollY
+        };
+        Object.keys(this.microMetricLogger.getRadioGroups()).forEach(function (radioGroupName, index) {
+            let radioGroup = this.microMetricLogger.getRadioGroups()[radioGroupName];
 
-    moveHandler( event ) {
-       let point = {
-         x: event.clientX + window.scrollX,
-         y: event.clientY + window.scrollY
-       };
-       Object.keys(radioGroups).forEach(function(radioGroupName, index) {
-         let radioGroup = radioGroups[radioGroupName];
 
-          let extendedBox = radioGroup.boundingBox.withPadding(20);
-
-         if (extendedBox.includesPoint(point.x, point.y)) {
-            if (this._current != radioGroupName) {
-              // Mouse entering "radioGroupName"
-              this._current = radioGroupName;
-              this._hoverTimestamp = new Date().getTime();
+            if (point.withinWidgetSurroundings(radioGroup)) {
+                if (this._current != radioGroupName) {
+                    // Mouse entering "radioGroupName"
+                    this._current = radioGroupName;
+                    this._hoverTimestamp = new Date().getTime();
+                }
             }
-          }
-          else {
-            if (this._current == radioGroupName) {
-              // Mouse exiting "radioGroupName"
-              this._current =  null;
-              this.microMetricLogger.logWidget(radioGroups[radioGroupName].elements[0]);
+            else {
+                if (this._current == radioGroupName) {
+                    // Mouse exiting "radioGroupName"
+                    this._current = null;
+                    this.microMetricLogger.logWidget(this.microMetricLogger.getRadioGroups()[radioGroupName]);
+                }
             }
-          }
-       }, this)
+        }, this)
+    }
+}
+
+class RadioSetMisClick extends MicroMetric {
+
+    constructor(logger) {
+        super(logger);
+        this.onClick = this.onClick.bind(this);
     }
 
+    setUp() {
+        document.addEventListener("click", this.onClick);
+    }
+
+    tearDown() {
+        document.removeEventListener("click", this.onClick);
+    }
+
+    onClick(event) {
+        let point = {
+            x: event.clientX + window.scrollX,
+            y: event.clientY + window.scrollY
+        };
+        Object.keys(this.microMetricLogger.getRadioGroups()).forEach(function (radioGroupName, index) {
+            let radioGroup = this.microMetricLogger.getRadioGroups()[radioGroupName];
+            if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
+                if (event.target.type != "radio" && !event.target.getAttribute("for")) {
+                    this.microMetricLogger.getWidgetLogs(radioGroup).clicks++;
+                }
+            }
+        }, this);
+    }
+}
+
+class RadioSetSelection extends MicroMetric {
+
+    constructor(logger) {
+        super(logger);
+        this.onChange = this.onChange.bind(this);
+    }
+
+    setUp() {
+        addEventListener("input[type=radio]", "change", this.onChange);
+    }
+
+    tearDown() {
+        removeEventListener("input[type=radio]", "change", this.onChange);
+    }
+
+    onChange(event) {
+        let radioGroup = this.microMetricLogger.getRadioGroups()[event.target.name];
+        this.microMetricLogger.getWidgetLogs(radioGroup).selections++;
+    }
 }
 
 class DatepickerMicroMetric extends MicroMetric {
     constructor(logger) {
-      super(logger);
-      this.onBlur = this.onBlur.bind(this);
-      this.onCalendarClick = this.onCalendarClick.bind(this);
-      this.clickRegistered = false;
+        super(logger);
+        this.onBlur = this.onBlur.bind(this);
+        this.onCalendarClick = this.onCalendarClick.bind(this);
+        this.clickRegistered = false;
     }
 
     onBlur(event) {
-      this.currentWidget = event.target;
-      if (!this.clickRegistered) {
-        addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
-        this.clickRegistered = true;
-      }
+        this.currentWidget = event.target;
+        if (!this.clickRegistered) {
+            addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+            this.clickRegistered = true;
+        }
     }
 
-    onCalendarClick() {}
+    onCalendarClick() {
+    }
 
     setUp() {
-      addEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
+        addEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
     }
 
     tearDown() {
-      removeEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
-      removeEventListener("div.salsa-calendar", "click", this.onCalendarClick);
+        removeEventListener("input[widget-type='datepicker']", "blur", this.onBlur);
+        removeEventListener("div.salsa-calendar", "click", this.onCalendarClick);
     }
 }
 
@@ -1093,7 +1183,7 @@ class SelectOptionsDisplayTime extends MicroMetric {
 
 class OptionsSelected extends MicroMetric {
 
-    constructor (logger) {
+    constructor(logger) {
         super(logger);
         this.onChange = this.onChange.bind(this);
     }
