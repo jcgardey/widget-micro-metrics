@@ -58,14 +58,16 @@ ScreenRecorder.prototype.startRecording = function () {
 
 ScreenRecorder.prototype.setUp = function () {
     const me = this;
-    window.addEventListener("blur", function () {
+    function pauseScreencast() {
         if (me.recording) {
             me.pauseRecording();
             me.save();
         }
-    });
+    };
+    window.onunload = pauseScreencast;
+    window.onblur = pauseScreencast;
     // this function will send events to the backend and reset the events array
-    setInterval(this.save.bind(this), 1000);
+    setInterval(this.save.bind(this), 5000);
 };
 
 ScreenRecorder.prototype.save = function () {
@@ -91,9 +93,9 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
 
 var screenRecorder = new ScreenRecorder();
 screenRecorder.setUp();
-//window.addEventListener("focus", function () {
-    screenRecorder.checkExistingScreencast();
-//});
+screenRecorder.checkExistingScreencast();
+
+
 
 browser.runtime.onMessage.addListener((request, sender) => {
     screenRecorder.toggleRecording();

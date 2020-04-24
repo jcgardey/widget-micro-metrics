@@ -10,13 +10,14 @@
       "node_modules/rrweb/dist/rrweb.js",
       "node_modules/jquery/dist/jquery.js",
       "content_scripts/RecorderModal.js",
+      "content_scripts/Select.js",
+      "content_scripts/RadioGroup.js",
+      "content_scripts/PagePatches.js",
       "content_scripts/MicroMetriclogger.js",
-      "content_scripts/ScreenRecorder.js",
-      "content_scripts/Select.js"
+      "content_scripts/ScreenRecorder.js"
     ],
     "css": [
-      "content_scripts/css/style.css",
-      "content_scripts/css/Select.css"
+      "content_scripts/css/style.css"
     ]
   }],
   "background":{
@@ -37,6 +38,8 @@
   "permissions": [
     "<all_urls>",
     "tabs",
-    "storage"
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
   ]
 }
