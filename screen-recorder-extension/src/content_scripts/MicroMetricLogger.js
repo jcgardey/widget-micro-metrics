@@ -1165,18 +1165,17 @@ class SelectOptionsDisplayTime extends MicroMetric {
             this.startTime = event.timeStamp;
         }
         else {
-            this.logOptionsDisplayTime();
+            this.microMetricLogger.getWidgetLogs(event.target.parentNode).optionsDisplayTime += this.getOptionsDisplayTime(event);
         }
         this.optionsDisplayed = !this.optionsDisplayed;
     }
 
-    logOptionsDisplayTime() {
-        let displayTime = event.timeStamp - this.startTime;
-        this.microMetricLogger.getWidgetLogs(event.target).optionsDisplayTime += displayTime;
+    getOptionsDisplayTime(event) {
+        return event.timeStamp - this.startTime;
     }
 
-    onChange() {
-        this.logOptionsDisplayTime();
+    onChange(event) {
+        this.microMetricLogger.getWidgetLogs(event.target).optionsDisplayTime += this.getOptionsDisplayTime(event);
         this.optionsDisplayed = false;
     }
 }
