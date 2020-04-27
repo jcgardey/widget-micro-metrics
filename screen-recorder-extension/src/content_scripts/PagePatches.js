@@ -28,6 +28,7 @@ function replaceNativeSelects() {
 
         let newSelectContainer = document.createElement("div");
         newSelectContainer.setAttribute("class", "dropdown");
+        newSelectContainer.setAttribute("widget-type","select");
 
         let selectTitle = document.createElement("div");
         selectTitle.setAttribute("class", "title pointerCursor");
@@ -54,8 +55,15 @@ function replaceNativeSelects() {
         selectTitle.style.padding = window.getComputedStyle(originalSelect).getPropertyValue("padding");
         selectTitle.style.background = "url('https://selfrefactoring.s3.amazonaws.com/testsites/arrow-down.svg') right 10px center no-repeat";
 
-        selectMenu.style.backgroundColor = "rgb(238,238,238)";
-        selectMenu.style.color = "rgb(91,91,91)";
+        if (window.getComputedStyle(originalSelect).getPropertyValue("background-color") != "rgba(0, 0, 0, 0)") {
+            selectMenu.style.backgroundColor = window.getComputedStyle(originalSelect).getPropertyValue("background-color");
+        }
+        else {
+            selectMenu.style.backgroundColor = "#ffff";
+        }
+        selectMenu.style.color = window.getComputedStyle(originalSelect).getPropertyValue("color");
+        selectMenu.style.border = window.getComputedStyle(originalSelect).getPropertyValue("border");
+
         selectMenu.style.zIndex = "9999";
         selectMenu.style.position = "absolute";
         selectMenu.style.borderRadius = ".4em";
@@ -63,13 +71,24 @@ function replaceNativeSelects() {
         selectMenu.style.overflowY = "auto";
         selectMenu.style.maxHeight = "300px";
 
-        originalSelect.style.display = "none";
         originalSelect.parentNode.insertBefore(newSelectContainer, originalSelect);
+        newSelectContainer.style.display = "none";
+
         let newSelect = new Select(newSelectContainer, originalSelect);
 
-        selectTitle.addEventListener("change", function () {
+        newSelectContainer.addEventListener("change", function () {
             originalSelect.value = selectTitle.getAttribute("value");
             originalSelect.dispatchEvent(new Event('change'));
+        });
+
+        originalSelect.addEventListener("mouseenter", function () {
+            originalSelect.style.display = "none";
+            newSelectContainer.style.display = "";
+        });
+
+        newSelectContainer.addEventListener("mouseleave", function () {
+            originalSelect.style.display = "";
+            newSelectContainer.style.display = "none";
         });
 
     });
@@ -77,7 +96,6 @@ function replaceNativeSelects() {
 
 replaceNativeSelects();
 replaceHeadingTags();
-
 
 // MAYOCLINIC
 if (document.location.href == "https://www.mayoclinic.org/appointments") {
@@ -88,4 +106,10 @@ if (document.location.href == "https://www.mayoclinic.org/appointments") {
 if (document.location.href.match("http://www.aa2000.com.ar/ezeiza/*") != null
     && document.querySelector("#aa2000HeaderAep_navestac").href == "http://www.aa2000.com.ar/ezeiza/Estacionamiento" ) {
     document.querySelector("#aa2000HeaderAep_navestac").href = "http://localhost/estacionamiento.html"
+}
+
+// TELEPASE
+if (document.location.href.match("https://telepase.com.ar/*") != null && document.querySelector('a[href="adhesion-con-tarjeta.html"]') ) {
+    console.log("Entra");
+    document.querySelector('a[href="adhesion-con-tarjeta.html"]').href = "http://localhost/telepase.html"
 }

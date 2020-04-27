@@ -9,7 +9,9 @@ class Select {
         this.menu.style.width = window.getComputedStyle(this.title).getPropertyValue("width");
         this.toggleMenuDisplay = this.toggleMenuDisplay.bind(this);
         this.handleOptionSelected = this.handleOptionSelected.bind(this);
-        this.title.textContent = this.getOriginalSelectOptions()[0].label;
+        if (this.getOriginalSelectActiveOption()) {
+            this.title.textContent = this.getOriginalSelectActiveOption().textContent;
+        }
         this.title.addEventListener("click", this.toggleMenuDisplay);
     }
 
@@ -62,14 +64,18 @@ class Select {
         this.title.setAttribute("value", e.target.getAttribute("value"));
         this.originalSelect.value = e.target.getAttribute("value");
 
-        let originalOptionSelected = Array.from(this.originalSelect.options).filter(option => {
+        let optionSelected = Array.from(this.originalSelect.options).filter(option => {
             return option.getAttribute("value") == e.target.getAttribute("value")
                 || e.target.textContent == option.textContent;
         });
-        if (this.originalSelect.querySelector("option[selected]")) {
-            this.originalSelect.querySelector("option[selected]").removeAttribute("selected");
+        if (this.getOriginalSelectActiveOption()) {
+            this.getOriginalSelectActiveOption().removeAttribute("selected");
         }
-        originalOptionSelected[0].setAttribute("selected", "selected");
+        optionSelected[0].setAttribute("selected", "selected");
         this.dropdown.dispatchEvent(new Event('change'));
+    }
+
+    getOriginalSelectActiveOption() {
+        return this.originalSelect.querySelector("option[selected]");
     }
 }
