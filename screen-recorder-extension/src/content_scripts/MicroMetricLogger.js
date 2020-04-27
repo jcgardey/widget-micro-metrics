@@ -698,6 +698,7 @@ class MouseDwellTime extends MicroMetric {
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
         this.lastWidget = null;
         this.lastTimestamp = null;
+        this.dwellThreshold = 600;
     }
 
     setUp() {
@@ -715,6 +716,10 @@ class MouseDwellTime extends MicroMetric {
             if (this.lastWidget) {
                 var dwellTime = now - this.lastTimestamp;
                 this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
+                if (dwellTime >= this.dwellThreshold) {
+                    this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                    this.microMetricLogger.logWidget(this.lastWidget);
+                }
             }
             this.lastWidget = this.currentWidget;
             this.lastTimestamp = now;
@@ -1022,7 +1027,7 @@ class HoverToFirstSelection extends MicroMetric {
                 if (this._current == radioGroupName) {
                     // Mouse exiting "radioGroupName"
                     this._current = null;
-                    this.microMetricLogger.logWidget(this.microMetricLogger.getRadioGroups()[radioGroupName]);
+                    //this.microMetricLogger.logWidget(this.microMetricLogger.getRadioGroups()[radioGroupName]);
                 }
             }
         }, this)
