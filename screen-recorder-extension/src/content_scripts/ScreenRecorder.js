@@ -9,13 +9,13 @@ ScreenRecorder.prototype.toggleRecording = function () {
         //modal.show();
         this.screencastId = Math.random().toString(36).substring(2, 15) + "-" + Date.now();
         this.screencastName = this.getNextID();
-        chrome.storage.sync.set({"screencastId": this.screencastId});
-        chrome.storage.sync.set({"screencastName": this.screencastId});
+        browser.storage.local.set({"screencastId": this.screencastId});
+        browser.storage.local.set({"screencastName": this.screencastId});
         this.startRecording();
     }
     else {
         this.pauseRecording();
-        chrome.storage.sync.clear();
+        browser.storage.local.remove(["screencastId", "screencastName"]);
         browser.runtime.sendMessage({"message": "stop"});
     }
 }
@@ -60,8 +60,8 @@ ScreenRecorder.prototype.setUp = function () {
     const me = this;
     function pauseScreencast() {
         if (me.recording) {
-            me.pauseRecording();
             me.save();
+            me.pauseRecording();
         }
     };
     window.onunload = pauseScreencast;
@@ -80,8 +80,7 @@ ScreenRecorder.prototype.save = function () {
 
 ScreenRecorder.prototype.checkExistingScreencast = function () {
     const me = this;
-    chrome.storage.sync.get(["screencastId", "screencastName"], function (data) {
-        console.log("data ", data);
+    browser.storage.local.get(["screencastId", "screencastName"]).then(function (data) {
         if (data.screencastId) {
             me.screencastId = data.screencastId;
             me.screencastName = data.screencastName;
@@ -89,7 +88,6 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
         }
     });
 };
-
 
 var screenRecorder = new ScreenRecorder();
 screenRecorder.setUp();

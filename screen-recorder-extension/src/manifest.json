@@ -41,5 +41,10 @@
     "storage",
     "webRequest",
     "webRequestBlocking"
-  ]
+  ],
+
+  "options_ui": {
+    "page": "content_scripts/options/options.html",
+    "open_in_tab": false
+  }
 }

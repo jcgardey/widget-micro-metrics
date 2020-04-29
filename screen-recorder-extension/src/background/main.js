@@ -1,4 +1,8 @@
-//require('webextension-polyfill');
+//var baseURL = "http://localhost:1701/micrometrics/";
+var baseURL;
+browser.storage.local.get("serverURL").then(function (result) {
+   baseURL = result.serverURL;
+});
 
 browser.browserAction.onClicked.addListener(function () {
     getCurrentTab(function (tab) {
@@ -22,7 +26,7 @@ browser.runtime.onMessage.addListener(function (request) {
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "save") {
         const data = JSON.stringify(request.data);
-        axios.post('http://localhost:1701/micrometrics/screencast',data, {
+        axios.post(baseURL + 'screencast',data, {
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -33,7 +37,7 @@ browser.runtime.onMessage.addListener(function (request) {
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "sendLogs") {
         const data = JSON.stringify(request.logs);
-        axios.post('http://localhost:1701/micrometrics/metrics',data, {
+        axios.post(baseURL + 'metrics',data, {
             headers: {
                 'Content-Type': 'application/json',
             }
