@@ -1,3 +1,3 @@
 testing
 isValid: aMicroMetric
-	^ true
+	^ (aMicroMetric valueAt: #interactions) > 0
