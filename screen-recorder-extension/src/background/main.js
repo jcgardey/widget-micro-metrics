@@ -1,8 +1,10 @@
 //var baseURL = "http://localhost:1701/micrometrics/";
-var baseURL;
 browser.storage.local.get("serverURL").then(function (result) {
-   baseURL = result.serverURL;
+   if (!result.serverURL) {
+       browser.storage.local.set({"serverURL": "http://usabilityrater.tk/micrometrics/"});
+   }
 });
+
 
 browser.browserAction.onClicked.addListener(function () {
     getCurrentTab(function (tab) {
@@ -26,10 +28,9 @@ browser.runtime.onMessage.addListener(function (request) {
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "save") {
         const data = JSON.stringify(request.data);
-        axios.post(baseURL + 'screencast',data, {
-            headers: {
-                'Content-Type': 'application/json',
-            }
+        browser.storage.local.get("serverURL").then(function (result) {
+            var url = result.serverURL + "screencast";
+            sendRequest(url, data);
         });
     }
 });
@@ -37,13 +38,20 @@ browser.runtime.onMessage.addListener(function (request) {
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "sendLogs") {
         const data = JSON.stringify(request.logs);
-        axios.post(baseURL + 'metrics',data, {
-            headers: {
-                'Content-Type': 'application/json',
-            }
+        browser.storage.local.get("serverURL").then(function (result) {
+            var url = result.serverURL + "metrics";
+            sendRequest(url, data);
         });
     }
 });
+
+function sendRequest(url, data) {
+    axios.post(url,data, {
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+}
 
 
 function getCurrentTab (callback) {
