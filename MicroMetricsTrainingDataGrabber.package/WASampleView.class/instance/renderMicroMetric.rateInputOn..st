@@ -1,6 +1,8 @@
 rendering
 renderMicroMetric: microMetric rateInputOn: html
 	html hiddenInput class: #micrometricHiddenId; value: microMetric id.
+	html hiddenInput class: #micrometricHiddenHTML; value: (microMetric valueAt: #html).
+	html paragraph: (microMetric valueAt: #label).
 	html tbsLabel
 		beSuccessIf: microMetric widgetType = 'TextInput';
 		beInfoIf: microMetric widgetType = 'SelectInput';
