@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "jquery": "^3.4.1",
-    "rrweb": "^0.7.29"
+    "jquery": "^3.5.0",
+    "rrweb": "^0.7.33"
   }
 }

@@ -255,6 +255,7 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
         datepicker: DatepickerLogs,
         radioset: RadioSetLogs
     };
+    this.widgetTypes = ["text","radio","datepicker","select", "a"];
 
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
@@ -842,13 +843,14 @@ class HoverAndBack extends MicroMetric {
                 var pathAngle = this.lastTrace().angleWith(this.currentTrace());
                 if (this.currentTrace().straightness() > 0.8 && Math.abs(pathAngle) < 40) {
                     var targetElement = document.elementsFromPoint(this.lastTrace().endPoint().x, this.lastTrace().endPoint().y)[0];
-                    if (targetElement.tagName == "INPUT" || targetElement.tagName == "SELECT" || targetElement.tagName == "A") {
+                    if (this.microMetricLogger.widgetTypes.includes(targetElement.getAttribute("widget"))) {
                         this.microMetricLogger.getWidgetLogs(targetElement).hoverAndBack++;
                     }
                     var startElement = document.elementsFromPoint(this.lastTrace().startPoint().x, this.lastTrace().startPoint().y)[0];
                     var endElement = document.elementsFromPoint(this.currentTrace().endPoint().x, this.currentTrace().endPoint().y)[0];
-                    if ((startElement.tagName == "INPUT" || startElement.tagName == "SELECT" || targetElement.tagName == "A") && (startElement == endElement))
+                    if (this.microMetricLogger.widgetTypes.includes(startElement.getAttribute("widget")) && startElement == endElement) {
                         this.microMetricLogger.getWidgetLogs(startElement).exitAndBack++;
+                    }
                 }
             }
             this._lastTrace = this.currentTrace();
