@@ -20,5 +20,13 @@ class RadioGroup {
         return this.boundingBox.withPadding(padding);
     }
 
+    getHTML() {
+        let html = '';
+        this.elements.map(element => {
+            html += element.outerHTML;
+        });
+        return html;
+    }
+
 
 }

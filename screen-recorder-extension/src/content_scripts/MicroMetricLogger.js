@@ -38,6 +38,10 @@ HTMLElement.prototype.getWidgetSurroundings = function () {
 
 };
 
+HTMLElement.prototype.getHTML = function () {
+    return this.outerHTML;
+}
+
 DOMRect.prototype.expandWith = function (anotherBoundingBox) {
     this.left = Math.min(this.left, anotherBoundingBox.left);
     this.top = Math.min(this.top, anotherBoundingBox.top);
@@ -287,6 +291,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
         else {
             this.widgets[metricId] = new WidgetLogs().getMetrics();
         }
+        this.widgets[metricId].html = anElement.getHTML();
         this.widgets[metricId].id = metricId;
         this.widgets.volunteer = this.volunteer;
     }
