@@ -25,91 +25,29 @@ function replaceNativeSelects() {
     let selects = Array.from(document.querySelectorAll("select"));
 
     selects.map(originalSelect => {
-
-        let newSelectContainer = document.createElement("div");
-        newSelectContainer.setAttribute("class", "dropdown");
-        newSelectContainer.setAttribute("widget-type","select");
-
-        let selectTitle = document.createElement("div");
-        selectTitle.setAttribute("class", "title pointerCursor");
-        newSelectContainer.appendChild(selectTitle);
-
-        let selectMenu = document.createElement("div");
-        selectMenu.setAttribute("class", "menu pointerCursor");
-        selectMenu.style.display = "none";
-        newSelectContainer.appendChild(selectMenu);
-
-        newSelectContainer.style.fontSize = window.getComputedStyle(originalSelect).getPropertyValue("font-size");
-        newSelectContainer.style.display = window.getComputedStyle(originalSelect).getPropertyValue("display");
-        newSelectContainer.style.fontFamily = window.getComputedStyle(originalSelect).getPropertyValue("font-family");
-        newSelectContainer.style.backgroundColor = window.getComputedStyle(originalSelect).getPropertyValue("background-color");
-        newSelectContainer.style.color = window.getComputedStyle(originalSelect).getPropertyValue("color");
-        newSelectContainer.style.border = window.getComputedStyle(originalSelect).getPropertyValue("border");
-        newSelectContainer.style.borderRadius = window.getComputedStyle(originalSelect).getPropertyValue("border-radius");
-        newSelectContainer.style.margin = window.getComputedStyle(originalSelect).getPropertyValue("margin");
-
-
-        selectTitle.style.textAlign = "center";
-        selectTitle.style.width = window.getComputedStyle(originalSelect).getPropertyValue("width");
-        selectTitle.style.height = window.getComputedStyle(originalSelect).getPropertyValue("height");
-        selectTitle.style.padding = window.getComputedStyle(originalSelect).getPropertyValue("padding");
-        selectTitle.style.background = "url('https://selfrefactoring.s3.amazonaws.com/testsites/arrow-down.svg') right 10px center no-repeat";
-
-        if (window.getComputedStyle(originalSelect).getPropertyValue("background-color") != "rgba(0, 0, 0, 0)") {
-            selectMenu.style.backgroundColor = window.getComputedStyle(originalSelect).getPropertyValue("background-color");
-        }
-        else {
-            selectMenu.style.backgroundColor = "#ffff";
-        }
-        selectMenu.style.color = window.getComputedStyle(originalSelect).getPropertyValue("color");
-        selectMenu.style.border = window.getComputedStyle(originalSelect).getPropertyValue("border");
-
-        selectMenu.style.zIndex = "9999";
-        selectMenu.style.position = "absolute";
-        selectMenu.style.borderRadius = ".4em";
-        selectMenu.style.overflowX = "hidden";
-        selectMenu.style.overflowY = "auto";
-        selectMenu.style.maxHeight = "300px";
-
-        originalSelect.parentNode.insertBefore(newSelectContainer, originalSelect);
-        newSelectContainer.style.display = "none";
-
-        let newSelect = new Select(newSelectContainer, originalSelect);
-
-        newSelectContainer.addEventListener("change", function () {
-            originalSelect.value = selectTitle.getAttribute("value");
-            originalSelect.dispatchEvent(new Event('change'));
-        });
-
-        originalSelect.addEventListener("mouseenter", function () {
-            originalSelect.style.display = "none";
-            newSelectContainer.style.display = "";
-        });
-
-        newSelectContainer.addEventListener("mouseleave", function () {
-            originalSelect.style.display = "";
-            newSelectContainer.style.display = "none";
-        });
-
+        new CustomSelect(originalSelect);
     });
 }
 
 replaceNativeSelects();
 replaceHeadingTags();
 
-// MAYOCLINIC
-if (document.location.href == "https://www.mayoclinic.org/appointments") {
-    document.querySelector(".contentbutton a").href = "http://localhost/mayoclinic.html";
+function modifyLinksUrls(selector, newTargetURL) {
+    Array.from(document.querySelectorAll(selector)).map(link => {
+       link.href = newTargetURL;
+    });
 }
+
+// MAYOCLINIC
+modifyLinksUrls("a[href='/forms/us-resident-appointment']", "http://selfrefactoring.s3.amazonaws.com/testsites/mayoclinic.html");
 
 // Estancionamiento EZEIZA
-if (document.location.href.match("http://www.aa2000.com.ar/ezeiza/*") != null
-    && document.querySelector("#aa2000HeaderAep_navestac").href == "http://www.aa2000.com.ar/ezeiza/Estacionamiento" ) {
-    document.querySelector("#aa2000HeaderAep_navestac").href = "http://localhost/estacionamiento.html"
-}
+modifyLinksUrls("a[href='ezeiza/Estacionamiento']", "http://selfrefactoring.s3.amazonaws.com/testsites/estacionamiento.html");
 
 // TELEPASE
-if (document.location.href.match("https://telepase.com.ar/*") != null && document.querySelector('a[href="adhesion-con-tarjeta.html"]') ) {
-    console.log("Entra");
-    document.querySelector('a[href="adhesion-con-tarjeta.html"]').href = "http://localhost/telepase.html"
-}
+modifyLinksUrls('a[href="form-adeshion-2020.html"]', "http://selfrefactoring.s3.amazonaws.com/testsites/telepase.html");
+
+
+// LACAJA
+modifyLinksUrls("a[href='https://www.lacaja.com.ar/cotizadorauto']", "https://selfrefactoring.s3.amazonaws.com/testsites/lacaja.html");
+

@@ -11,7 +11,7 @@ ScreenRecorder.prototype.toggleRecording = function () {
         this.screencastName = this.getNextID();
         browser.storage.local.set({"screencastId": this.screencastId});
         browser.storage.local.set({"screencastName": this.screencastId});
-        this.startRecording();
+        browser.runtime.sendMessage({"message": "start", "screencastId": this.screencastId, "screencastName": this.screencastId});
     }
     else {
         this.pauseRecording();
@@ -44,7 +44,6 @@ ScreenRecorder.prototype.getNextID = function () {
 ScreenRecorder.prototype.startRecording = function () {
     this.events = [];
     this.recording = true;
-    browser.runtime.sendMessage({"message": "start"});
     const me = this;
     this.stopScreencast = rrweb.record({
         emit(event) {
@@ -67,7 +66,7 @@ ScreenRecorder.prototype.setUp = function () {
     window.onunload = pauseScreencast;
     window.onblur = pauseScreencast;
     // this function will send events to the backend and reset the events array
-    setInterval(this.save.bind(this), 5000);
+    setInterval(this.save.bind(this), 10000);
 };
 
 ScreenRecorder.prototype.save = function () {
@@ -96,5 +95,13 @@ screenRecorder.checkExistingScreencast();
 
 
 browser.runtime.onMessage.addListener((request, sender) => {
-    screenRecorder.toggleRecording();
+    if (request.message == "open") {
+        screenRecorder.toggleRecording();
+    }
+});
+
+browser.runtime.onMessage.addListener((request,sender) => {
+    if (request.message == "start_recording") {
+        screenRecorder.startRecording();
+    }
 });

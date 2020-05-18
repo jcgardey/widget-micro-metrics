@@ -38,6 +38,24 @@ HTMLElement.prototype.getWidgetSurroundings = function () {
 
 };
 
+HTMLElement.prototype.getHTML = function () {
+    return this.outerHTML;
+}
+
+HTMLElement.prototype.getCenter = function () {
+    const currentElementBox = this.getAbsoluteBoundingClientRect();
+    return {x: currentElementBox.x + (currentElementBox.width / 2), y: currentElementBox.y + (currentElementBox.height / 2)}
+};
+
+HTMLElement.prototype.euclidianDistanceToElement = function (anotherElement) {
+    return Math.sqrt( Math.pow(this.getCenter().x - anotherElement.getCenter().x, 2) + Math.pow(this.getCenter().y - anotherElement.getCenter().y, 2));
+}
+
+HTMLElement.prototype.closestLabel = function () {
+    allLabels = Array.from(this.parentNode.parentNode.querySelectorAll('label'));
+    return allLabels.reduce((min, current) => current.euclidianDistanceToElement(this) < min.euclidianDistanceToElement(this) ? current: min, allLabels[0]);
+}
+
 DOMRect.prototype.expandWith = function (anotherBoundingBox) {
     this.left = Math.min(this.left, anotherBoundingBox.left);
     this.top = Math.min(this.top, anotherBoundingBox.top);
@@ -155,12 +173,13 @@ function initializeWidgetTypes() {
 initializeWidgetTypes();
 
 
-function WidgetLogs() {
+function WidgetLogs(widget) {
     this.metrics = {
         "id": null,
         "url": window.location.href,
         "authorId": "",
         "volunteer": "",
+        "label": this.getWidgetLabel(widget),
         "interactions": 0,
         "hoverAndBack": 0,
         "exitAndBack": 0,
@@ -175,8 +194,12 @@ WidgetLogs.prototype.getMetrics = function () {
     return this.metrics;
 }
 
-function TextInputLogs() {
-    WidgetLogs.call(this);
+WidgetLogs.prototype.getWidgetLabel = function (widget) {
+    return widget.closestLabel().textContent;
+}
+
+function TextInputLogs(widget) {
+    WidgetLogs.call(this,widget);
     this.metrics = Object.assign({}, this.metrics, {
         "widgetType": "TextInput",
         "typingLatency": 0,
@@ -191,8 +214,8 @@ function TextInputLogs() {
 
 TextInputLogs.prototype = Object.create(WidgetLogs.prototype);
 
-function SelectInputLogs() {
-    WidgetLogs.call(this);
+function SelectInputLogs(widget) {
+    WidgetLogs.call(this,widget);
     this.metrics = Object.assign({}, this.metrics, {
         "widgetType": "SelectInput",
         //"clicks": 0,
@@ -205,8 +228,8 @@ function SelectInputLogs() {
 
 SelectInputLogs.prototype = Object.create(WidgetLogs.prototype);
 
-function AnchorLogs() {
-    WidgetLogs.call(this);
+function AnchorLogs(widget) {
+    WidgetLogs.call(this,widget);
     this.metrics = Object.assign({}, this.metrics, {
         "widgetType": "Anchor",
         "misclicks": 0,
@@ -215,8 +238,12 @@ function AnchorLogs() {
 
 AnchorLogs.prototype = Object.create(WidgetLogs.prototype);
 
-function DatepickerLogs() {
-    WidgetLogs.call(this);
+AnchorLogs.prototype.getWidgetLabel = function (widget) {
+    return widget.textContent;
+}
+
+function DatepickerLogs(widget) {
+    WidgetLogs.call(this,widget);
     this.metrics = Object.assign({}, this.metrics, {
         "widgetType": "Datepicker",
         "selections": 0,
@@ -226,8 +253,8 @@ function DatepickerLogs() {
 
 DatepickerLogs.prototype = Object.create(WidgetLogs.prototype);
 
-function RadioSetLogs() {
-    WidgetLogs.call(this);
+function RadioSetLogs(widget) {
+    WidgetLogs.call(this, widget);
     this.metrics = Object.assign({}, this.metrics, {
         "widgetType": "RadioSet",
         "hoverToFirstSelection": 0,
@@ -237,6 +264,10 @@ function RadioSetLogs() {
 }
 
 RadioSetLogs.prototype = Object.create(WidgetLogs.prototype);
+
+RadioSetLogs.prototype.getWidgetLabel = function (widget) {
+    return widget.getLabel();
+}
 
 function MicroMetricLogger(screencastId, volunteerName, serverURL) {
     this.screencastId = screencastId;
@@ -251,6 +282,7 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
         datepicker: DatepickerLogs,
         radioset: RadioSetLogs
     };
+    this.widgetTypes = ["text","radio","datepicker","select", "a"];
 
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
@@ -282,11 +314,12 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
     if (!this.widgets[metricId]) {
         var loggerName = anElement.getAttribute("widget-type") ? anElement.getAttribute("widget-type") : anElement.tagName.toLowerCase();
         if (this.loggers[loggerName]) {
-            this.widgets[metricId] = new (this.loggers[loggerName])().getMetrics();
+            this.widgets[metricId] = new (this.loggers[loggerName])(anElement).getMetrics();
         }
         else {
-            this.widgets[metricId] = new WidgetLogs().getMetrics();
+            this.widgets[metricId] = new WidgetLogs(anElement).getMetrics();
         }
+        this.widgets[metricId].html = anElement.getHTML();
         this.widgets[metricId].id = metricId;
         this.widgets.volunteer = this.volunteer;
     }
@@ -837,13 +870,14 @@ class HoverAndBack extends MicroMetric {
                 var pathAngle = this.lastTrace().angleWith(this.currentTrace());
                 if (this.currentTrace().straightness() > 0.8 && Math.abs(pathAngle) < 40) {
                     var targetElement = document.elementsFromPoint(this.lastTrace().endPoint().x, this.lastTrace().endPoint().y)[0];
-                    if (targetElement.tagName == "INPUT" || targetElement.tagName == "SELECT" || targetElement.tagName == "A") {
+                    if (this.microMetricLogger.widgetTypes.includes(targetElement.getAttribute("widget"))) {
                         this.microMetricLogger.getWidgetLogs(targetElement).hoverAndBack++;
                     }
                     var startElement = document.elementsFromPoint(this.lastTrace().startPoint().x, this.lastTrace().startPoint().y)[0];
                     var endElement = document.elementsFromPoint(this.currentTrace().endPoint().x, this.currentTrace().endPoint().y)[0];
-                    if ((startElement.tagName == "INPUT" || startElement.tagName == "SELECT" || targetElement.tagName == "A") && (startElement == endElement))
+                    if (this.microMetricLogger.widgetTypes.includes(startElement.getAttribute("widget")) && startElement == endElement) {
                         this.microMetricLogger.getWidgetLogs(startElement).exitAndBack++;
+                    }
                 }
             }
             this._lastTrace = this.currentTrace();
