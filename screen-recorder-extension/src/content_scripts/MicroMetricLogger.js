@@ -12,6 +12,10 @@ function makeid(length) {
     return result;
 }
 
+HTMLElement.prototype.setMetricID = function (id) {
+    this.setAttribute("data-metric-id", id);
+}
+
 HTMLElement.prototype.distanceToPoint = function (x, y) {
     let boundingBox = this.getBoundingClientRect();
     let rect = {
@@ -32,7 +36,7 @@ HTMLElement.prototype.getAbsoluteBoundingClientRect = function () {
 }
 
 HTMLElement.prototype.getWidgetSurroundings = function () {
-    margin = 40;
+    margin = 20;
     const rect = this.getAbsoluteBoundingClientRect();
     return rect.withPadding(margin);
 
@@ -81,6 +85,12 @@ Object.prototype.withinWidgetSurroundings = function (widget) {
     }
     var rectangle = widget.getWidgetSurroundings(widget);
     return rectangle.includesPoint(this.x, this.y);
+}
+
+Object.prototype.asArray = function () {
+    return Object.keys(this).map(key => {
+        return this[key]
+    });
 }
 
 // intended for debbuging purposes
@@ -217,7 +227,7 @@ TextInputLogs.prototype = Object.create(WidgetLogs.prototype);
 function SelectInputLogs(widget) {
     WidgetLogs.call(this,widget);
     this.metrics = Object.assign({}, this.metrics, {
-        "widgetType": "SelectInput",
+        "widgetType": widget.getAttribute("widget-type") == "select" ? "SelectInput" : "DateSelect",
         //"clicks": 0,
         //"keystrokes": 0,
         "optionsSelected": 0,
@@ -280,7 +290,8 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
         select: SelectInputLogs,
         a: AnchorLogs,
         datepicker: DatepickerLogs,
-        radioset: RadioSetLogs
+        radioset: RadioSetLogs,
+        "date-select": SelectInputLogs
     };
     this.widgetTypes = ["text","radio","datepicker","select", "a"];
 
@@ -308,7 +319,7 @@ function MicroMetricLogger(screencastId, volunteerName, serverURL) {
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
     metricId = anElement.getAttribute("data-metric-id");
     if (!metricId) {
-        anElement.setAttribute("data-metric-id", this.getNextID());
+        anElement.setMetricID(this.getNextID());
         metricId = anElement.getAttribute("data-metric-id");
     }
     if (!this.widgets[metricId]) {
@@ -421,23 +432,47 @@ MicroMetricLogger.prototype.getRadioGroups = function () {
         this.radioGroups = [];
         allRadios = document.querySelectorAll('input[type="radio"]');
         for (let input of allRadios) {
+            /*
             currentElementBox = input.getAbsoluteBoundingClientRect();
             inputX = currentElementBox.x + (currentElementBox.width / 2);
             inputY = currentElementBox.y + (currentElementBox.height / 2);
+
             allLabels = Array.from(document.getElementsByTagName('label'));
             closestLabel = allLabels.reduce((min, current) => current.distanceToPoint(inputX, inputY) < min.distanceToPoint(inputX, inputY) ? current : min, allLabels[0])
+            */
+            allLabels = Array.from(input.parentNode.parentNode.querySelectorAll("label"));
+            closestLabel = allLabels.reduce((min, current) => current.euclidianDistanceToElement(input) < min.euclidianDistanceToElement(input) ? current : min, allLabels[0]);
 
             if (typeof(this.radioGroups[input.name]) == "undefined") {
-                this.radioGroups[input.name] = new RadioGroup(currentElementBox);
+                this.radioGroups[input.name] = new RadioGroup();
             }
+            this.radioGroups[input.name].addElement(input);
+            this.radioGroups[input.name].addElement(closestLabel);
 
-            this.radioGroups[input.name].elements.push(input);
-            this.radioGroups[input.name].elements.push(closestLabel);
-            this.radioGroups[input.name]['boundingBox'].expandWith(currentElementBox);
-            this.radioGroups[input.name]['boundingBox'].expandWith(closestLabel.getAbsoluteBoundingClientRect());
         }
     }
     return this.radioGroups;
+};
+
+MicroMetricLogger.prototype.createDateSelects = function () {
+    let dateSelects = [];
+    Array.from(document.querySelectorAll("div[widget-type='date-select']")).map(dateSelect => {
+        const dateSelectName = dateSelect.getAttribute("data-select-name");
+        if (typeof(dateSelects[dateSelectName]) == "undefined") {
+            dateSelects[dateSelectName] = new DateSelects();
+        }
+        dateSelects[dateSelectName].addElement(dateSelect);
+    });
+    return Object.keys(dateSelects).map(key => {
+        return dateSelects[key];
+    });
+}
+
+MicroMetricLogger.prototype.getDateSelects = function () {
+    if (!this.dateSelects) {
+        this.dateSelects = this.createDateSelects();
+    }
+    return this.dateSelects;
 }
 
 
@@ -473,7 +508,7 @@ class MicroMetric {
         var radios = Object.keys(this.microMetricLogger.getRadioGroups()).map(key => {
             return this.microMetricLogger.getRadioGroups()[key]
         });
-        var targetElements = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(radios);
+        var targetElements = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(this.microMetricLogger.getRadioGroups().asArray()).concat(this.microMetricLogger.getDateSelects());
         for (var i = 0; i < targetElements.length; i++) {
             if (point.withinWidgetSurroundings(targetElements[i])) {
                 return targetElements[i];
@@ -1190,13 +1225,13 @@ class SelectOptionsDisplayTime extends MicroMetric {
     }
 
     setUp() {
-        addEventListener("div[widget-type='select'] .title", "click", this.onClick);
-        addEventListener("div[widget-type='select']", "change", this.onChange);
+        addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onClick);
+        addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "change", this.onChange);
     }
 
     tearDown() {
-        removeEventListener("div[widget-type='select'] .title", "click", this.onClick);
-        removeEventListener("div[widget-type='select']", "change", this.onChange);
+        removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onClick);
+        removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "change", this.onChange);
     }
 
     onClick(event) {
@@ -1227,11 +1262,11 @@ class OptionsSelected extends MicroMetric {
     }
 
     setUp() {
-        addEventListener("div[widget-type='select']", "change", this.onChange);
+        addEventListener("div[widget-type='select'], div[widget-type='date-select']", "change", this.onChange);
     }
 
     tearDown() {
-        removeEventListener("div[widget-type='select']", "change", this.onChange);
+        removeEventListener("div[widget-type='select'],div[widget-type='date-select']", "change", this.onChange);
     }
 
     onChange() {

@@ -99,7 +99,9 @@ class CustomSelect {
     createSelectWrapper() {
         this.dropdown = document.createElement("div");
         this.dropdown.setAttribute("class", "dropdown");
-        this.dropdown.setAttribute("widget-type","select");
+        this.dropdown.setAttribute("widget-type",this.originalSelect.getAttribute("widget-type") ? this.originalSelect.getAttribute("widget-type"):"select");
+        this.dropdown.setAttribute("data-select-id", this.originalSelect.id);
+        this.dropdown.setAttribute("data-select-name", this.originalSelect.getAttribute("name"));
 
         this.title = document.createElement("div");
         this.title.setAttribute("class", "title pointerCursor");
