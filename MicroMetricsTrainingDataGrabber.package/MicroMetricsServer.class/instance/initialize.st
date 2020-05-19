@@ -8,4 +8,5 @@ initialize
 		at: #Anchor put: AnchorGrabber new;
 		at: #Datepicker put: DatepickerGrabber new;
 		at: #RadioSet put: RadioSetGrabber new;
+		at: #DateSelect put: SelectInputGrabber new;
 		yourself
