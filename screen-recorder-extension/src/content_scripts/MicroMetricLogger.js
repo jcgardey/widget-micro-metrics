@@ -205,7 +205,15 @@ WidgetLogs.prototype.getMetrics = function () {
 }
 
 WidgetLogs.prototype.getWidgetLabel = function (widget) {
-    return widget.closestLabel().textContent;
+    if (widget.getAttribute("placeholder")) {
+        return widget.getAttribute("placeholder");
+    }
+    else if (widget.closestLabel()) {
+        return widget.closestLabel().textContent;
+    }
+    else {
+        return "";
+    }
 }
 
 function TextInputLogs(widget) {
@@ -764,31 +772,36 @@ class MouseDwellTime extends MicroMetric {
     constructor(logger) {
         super(logger);
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-        this.lastWidget = null;
-        this.lastTimestamp = null;
         this.dwellThreshold = 600;
     }
 
     setUp() {
+        this.lastWidget = null;
+        this.lastTimestamp = null;
         document.addEventListener("mousemove", this.mouseMoveHandler);
     }
 
     tearDown() {
         document.removeEventListener("mousemove", this.mouseMoveHandler);
+        this.updateDwellTime(Date.now());
+    }
+
+    updateDwellTime(now) {
+        if (this.lastWidget) {
+            var dwellTime = now - this.lastTimestamp;
+            this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
+            if (dwellTime >= this.dwellThreshold) {
+                this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                this.microMetricLogger.logWidget(this.lastWidget);
+            }
+        }
     }
 
     mouseMoveHandler(event) {
         this.currentWidget = this.getTargetWidget({x: event.pageX, y: event.pageY});
         if (this.currentWidget != this.lastWidget) {
             var now = event.timeStamp;
-            if (this.lastWidget) {
-                var dwellTime = now - this.lastTimestamp;
-                this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
-                if (dwellTime >= this.dwellThreshold) {
-                    this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
-                    this.microMetricLogger.logWidget(this.lastWidget);
-                }
-            }
+            this.updateDwellTime(now);
             this.lastWidget = this.currentWidget;
             this.lastTimestamp = now;
         }
