@@ -512,14 +512,16 @@ class MicroMetric {
         this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], a";
     }
 
+    getCandidateWidgets() {
+        let allWidgets = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(this.microMetricLogger.getRadioGroups().asArray()).concat(this.microMetricLogger.getDateSelects());
+        let discardedWidgets = Array.from(document.querySelectorAll("[data-micrometric-logger='no-capture']"));
+        return allWidgets.filter(element => !discardedWidgets.includes(element));
+    }
+
     getTargetWidget = function (point) {
-        var radios = Object.keys(this.microMetricLogger.getRadioGroups()).map(key => {
-            return this.microMetricLogger.getRadioGroups()[key]
-        });
-        var targetElements = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(this.microMetricLogger.getRadioGroups().asArray()).concat(this.microMetricLogger.getDateSelects());
-        for (var i = 0; i < targetElements.length; i++) {
-            if (point.withinWidgetSurroundings(targetElements[i])) {
-                return targetElements[i];
+        for (var i = 0; i < this.getCandidateWidgets().length; i++) {
+            if (point.withinWidgetSurroundings(this.getCandidateWidgets()[i])) {
+                return this.getCandidateWidgets()[i];
             }
         }
         return null;
@@ -1173,15 +1175,11 @@ class DatepickerMicroMetric extends MicroMetric {
         super(logger);
         this.onBlur = this.onBlur.bind(this);
         this.onCalendarClick = this.onCalendarClick.bind(this);
-        this.clickRegistered = false;
     }
 
     onBlur(event) {
         this.currentWidget = event.target;
-        if (!this.clickRegistered) {
-            addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
-            this.clickRegistered = true;
-        }
+        addEventListener("div.salsa-calendar[data-input-id='" + this.currentWidget.id +"']", "click", this.onCalendarClick);
     }
 
     onCalendarClick() {
