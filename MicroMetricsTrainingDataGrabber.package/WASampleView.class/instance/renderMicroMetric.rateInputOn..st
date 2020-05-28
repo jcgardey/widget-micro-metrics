@@ -9,6 +9,7 @@ renderMicroMetric: microMetric rateInputOn: html
 		beWarningIf: microMetric widgetType = 'RadioSet';
 		beDangerIf: microMetric widgetType = 'Anchor';
 		bePrimaryIf: microMetric widgetType = 'Datepicker';
+		bePrimaryIf: microMetric widgetType = 'DateSelect';
 		title: microMetric widgetType;
 		with: microMetric widgetType first.
 	html space.
