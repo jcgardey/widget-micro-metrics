@@ -1,5 +1,5 @@
 initialization
 initialize
-	events := Set new.
+	events := SortedCollection sortBlock:[:event :anotherEvent | (event at: #timestamp) < (anotherEvent at: #timestamp)].
 	metrics := Set new.
 	timestamp := DateAndTime now

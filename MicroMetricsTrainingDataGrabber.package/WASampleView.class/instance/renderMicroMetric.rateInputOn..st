@@ -1,6 +1,7 @@
 rendering
 renderMicroMetric: microMetric rateInputOn: html
 	html hiddenInput class: #micrometricHiddenId; value: microMetric id.
+	html hiddenInput class: #micrometricHiddenXpath; value: microMetric xpath asStringWithCr.
 	html hiddenInput class: #micrometricHiddenHTML; value: (microMetric valueAt: #html).
 	html paragraph: (microMetric valueAt: #label).
 	html tbsLabel

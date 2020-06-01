@@ -6,4 +6,4 @@ metricFrom: request
 	values := Dictionary new.
 	self metricsToCapture
 		do: [ :metricName | values at: metricName put: (request at: metricName) ].
-	^ MicroMetric id: id timestamp: timestamp valuesDictionary: values
+	^ MicroMetric id: id timestamp: timestamp valuesDictionary: values xpath: (request at: #xpath)
