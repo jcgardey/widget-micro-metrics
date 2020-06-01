@@ -10,7 +10,8 @@
 		"authorId",
 		"timestamp",
 		"valuesDictionary",
-		"ratings"
+		"ratings",
+		"xpath"
 	],
 	"name" : "MicroMetric",
 	"type" : "normal"
