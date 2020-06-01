@@ -41,7 +41,7 @@ ScreenRecorder.prototype.getNextID = function () {
     return adjective + "_" + animal + "_" + randomNumber;
 };
 
-ScreenRecorder.prototype.startRecording = function () {
+ScreenRecorder.prototype.startRecording = function (nextMetricNumber) {
     this.recording = true;
     const me = this;
     this.stopScreencast = rrweb.record({
@@ -49,8 +49,11 @@ ScreenRecorder.prototype.startRecording = function () {
             me.events.push(event);
         },
     });
+    if (!nextMetricNumber) {
+        nextMetricNumber = 0;
+    }
 
-    this.eventLogger = new MicroMetricLogger(this.screencastId, this.screencastName, "http://localhost:1701/micrometrics/metrics/");
+    this.eventLogger = new MicroMetricLogger(this.screencastId, this.screencastName, nextMetricNumber);
     this.eventLogger.startLogging();
 };
 
@@ -61,6 +64,7 @@ ScreenRecorder.prototype.setUp = function () {
         if (me.recording) {
             me.pauseRecording();
             browser.storage.local.set({"events": me.events});
+            browser.storage.local.set({"nextMetricNumber": me.eventLogger.nextID});
         }
     };
     window.onunload = pauseScreencast;
@@ -84,7 +88,7 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
             me.screencastId = data.screencastId;
             me.screencastName = data.screencastName;
             me.events = data.events;
-            me.startRecording();
+            me.startRecording(data.nextMetricNumber);
         }
     });
 };

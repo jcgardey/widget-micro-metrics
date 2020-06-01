@@ -46,6 +46,14 @@ HTMLElement.prototype.getHTML = function () {
     return this.outerHTML;
 }
 
+HTMLElement.prototype.getXPathCollection = function () {
+    return [this.getXPath()];
+}
+
+HTMLElement.prototype.getXPath = function () {
+    return new XPathInterpreter().getPath(this, document.body);
+}
+
 HTMLElement.prototype.getCenter = function () {
     const currentElementBox = this.getAbsoluteBoundingClientRect();
     return {x: currentElementBox.x + (currentElementBox.width / 2), y: currentElementBox.y + (currentElementBox.height / 2)}
@@ -287,12 +295,11 @@ RadioSetLogs.prototype.getWidgetLabel = function (widget) {
     return widget.getLabel();
 }
 
-function MicroMetricLogger(screencastId, volunteerName, serverURL) {
+function MicroMetricLogger(screencastId, volunteerName, nextID) {
     this.screencastId = screencastId;
     this.volunteerName = volunteerName;
-    this.serverURL = serverURL;
     this.widgets = {};
-    this.nextID = 0;
+    this.nextID = nextID;
     this.loggers = {
         text: TextInputLogs,
         select: SelectInputLogs,
@@ -339,6 +346,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
             this.widgets[metricId] = new WidgetLogs(anElement).getMetrics();
         }
         this.widgets[metricId].html = anElement.getHTML();
+        this.widgets[metricId].xpath = anElement.getXPathCollection();
         this.widgets[metricId].id = metricId;
         this.widgets.volunteer = this.volunteer;
     }
@@ -428,7 +436,6 @@ MicroMetricLogger.prototype.stopLogging = function () {
     console.log(this.widgets);
     browser.runtime.sendMessage({
         "message": "sendLogs",
-        "url": this.serverURL,
         "logs": {"metrics": this.widgets, "screencastId": this.screencastId}
     });
     this.screencastId = null;
