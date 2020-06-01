@@ -42,7 +42,6 @@ ScreenRecorder.prototype.getNextID = function () {
 };
 
 ScreenRecorder.prototype.startRecording = function () {
-    this.events = [];
     this.recording = true;
     const me = this;
     this.stopScreencast = rrweb.record({
@@ -56,11 +55,12 @@ ScreenRecorder.prototype.startRecording = function () {
 };
 
 ScreenRecorder.prototype.setUp = function () {
+    this.events = [];
     const me = this;
     function pauseScreencast() {
         if (me.recording) {
-            me.save();
             me.pauseRecording();
+            browser.storage.local.set({"events": me.events});
         }
     };
     window.onunload = pauseScreencast;
@@ -69,20 +69,21 @@ ScreenRecorder.prototype.setUp = function () {
     setInterval(this.save.bind(this), 10000);
 };
 
-ScreenRecorder.prototype.save = function () {
+ScreenRecorder.prototype.save = function (flag) {
     if (this.events.length > 0) {
         browser.runtime.sendMessage({"message":"save", "data":{"events": this.events, "screencastName": this.screencastName,
-                "screencastId": this.screencastId, "url": document.location.href}});
+                "screencastId": this.screencastId, "url": document.location.href, "flag": flag}});
         this.events = [];
     }
 }
 
 ScreenRecorder.prototype.checkExistingScreencast = function () {
     const me = this;
-    browser.storage.local.get(["screencastId", "screencastName"]).then(function (data) {
+    browser.storage.local.get().then(function (data) {
         if (data.screencastId) {
             me.screencastId = data.screencastId;
             me.screencastName = data.screencastName;
+            me.events = data.events;
             me.startRecording();
         }
     });

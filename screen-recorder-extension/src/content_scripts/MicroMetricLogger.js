@@ -205,7 +205,15 @@ WidgetLogs.prototype.getMetrics = function () {
 }
 
 WidgetLogs.prototype.getWidgetLabel = function (widget) {
-    return widget.closestLabel().textContent;
+    if (widget.getAttribute("placeholder")) {
+        return widget.getAttribute("placeholder");
+    }
+    else if (widget.closestLabel()) {
+        return widget.closestLabel().textContent;
+    }
+    else {
+        return "";
+    }
 }
 
 function TextInputLogs(widget) {
@@ -504,14 +512,16 @@ class MicroMetric {
         this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], a";
     }
 
+    getCandidateWidgets() {
+        let allWidgets = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(this.microMetricLogger.getRadioGroups().asArray()).concat(this.microMetricLogger.getDateSelects());
+        let discardedWidgets = Array.from(document.querySelectorAll("[data-micrometric-logger='no-capture']"));
+        return allWidgets.filter(element => !discardedWidgets.includes(element));
+    }
+
     getTargetWidget = function (point) {
-        var radios = Object.keys(this.microMetricLogger.getRadioGroups()).map(key => {
-            return this.microMetricLogger.getRadioGroups()[key]
-        });
-        var targetElements = Array.from(document.querySelectorAll(this.targetElementsSelector)).concat(this.microMetricLogger.getRadioGroups().asArray()).concat(this.microMetricLogger.getDateSelects());
-        for (var i = 0; i < targetElements.length; i++) {
-            if (point.withinWidgetSurroundings(targetElements[i])) {
-                return targetElements[i];
+        for (var i = 0; i < this.getCandidateWidgets().length; i++) {
+            if (point.withinWidgetSurroundings(this.getCandidateWidgets()[i])) {
+                return this.getCandidateWidgets()[i];
             }
         }
         return null;
@@ -764,31 +774,36 @@ class MouseDwellTime extends MicroMetric {
     constructor(logger) {
         super(logger);
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-        this.lastWidget = null;
-        this.lastTimestamp = null;
         this.dwellThreshold = 600;
     }
 
     setUp() {
+        this.lastWidget = null;
+        this.lastTimestamp = null;
         document.addEventListener("mousemove", this.mouseMoveHandler);
     }
 
     tearDown() {
         document.removeEventListener("mousemove", this.mouseMoveHandler);
+        this.updateDwellTime(Date.now());
+    }
+
+    updateDwellTime(now) {
+        if (this.lastWidget) {
+            var dwellTime = now - this.lastTimestamp;
+            this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
+            if (dwellTime >= this.dwellThreshold) {
+                this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                this.microMetricLogger.logWidget(this.lastWidget);
+            }
+        }
     }
 
     mouseMoveHandler(event) {
         this.currentWidget = this.getTargetWidget({x: event.pageX, y: event.pageY});
         if (this.currentWidget != this.lastWidget) {
             var now = event.timeStamp;
-            if (this.lastWidget) {
-                var dwellTime = now - this.lastTimestamp;
-                this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
-                if (dwellTime >= this.dwellThreshold) {
-                    this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
-                    this.microMetricLogger.logWidget(this.lastWidget);
-                }
-            }
+            this.updateDwellTime(now);
             this.lastWidget = this.currentWidget;
             this.lastTimestamp = now;
         }
@@ -1160,15 +1175,11 @@ class DatepickerMicroMetric extends MicroMetric {
         super(logger);
         this.onBlur = this.onBlur.bind(this);
         this.onCalendarClick = this.onCalendarClick.bind(this);
-        this.clickRegistered = false;
     }
 
     onBlur(event) {
         this.currentWidget = event.target;
-        if (!this.clickRegistered) {
-            addEventListener("div.salsa-calendar", "click", this.onCalendarClick);
-            this.clickRegistered = true;
-        }
+        addEventListener("div.salsa-calendar[data-input-id='" + this.currentWidget.id +"']", "click", this.onCalendarClick);
     }
 
     onCalendarClick() {
