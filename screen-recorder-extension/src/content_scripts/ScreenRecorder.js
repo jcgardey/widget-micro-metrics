@@ -6,23 +6,23 @@ function ScreenRecorder () {
 
 ScreenRecorder.prototype.toggleRecording = function () {
     if (!this.recording) {
-        //modal.show();
         this.screencastId = Math.random().toString(36).substring(2, 15) + "-" + Date.now();
         this.screencastName = this.getNextID();
         browser.storage.local.set({"screencastId": this.screencastId});
-        browser.storage.local.set({"screencastName": this.screencastId});
-        browser.runtime.sendMessage({"message": "start", "screencastId": this.screencastId, "screencastName": this.screencastId});
+        browser.storage.local.set({"screencastName": this.screencastName});
+        browser.runtime.sendMessage({"message": "start", "screencastId": this.screencastId, "screencastName": this.screencastName});
     }
     else {
         this.pauseRecording();
-        browser.storage.local.remove(["screencastId", "screencastName"]);
+        this.eventLogger.stopLogging();
+        browser.storage.local.remove(["screencastId", "screencastName", "events", "widgets" ,"nextMetricNumber"]);
         browser.runtime.sendMessage({"message": "stop"});
+        console.log("all events ", this.allEvents);
     }
 }
 
 ScreenRecorder.prototype.pauseRecording = function () {
     this.stopScreencast();
-    this.eventLogger.stopLogging();
     this.recording = false;
 }
 
@@ -41,30 +41,31 @@ ScreenRecorder.prototype.getNextID = function () {
     return adjective + "_" + animal + "_" + randomNumber;
 };
 
-ScreenRecorder.prototype.startRecording = function (nextMetricNumber) {
+ScreenRecorder.prototype.startRecording = function (widgets,nextMetricNumber) {
     this.recording = true;
     const me = this;
     this.stopScreencast = rrweb.record({
         emit(event) {
             me.events.push(event);
+            me.allEvents.push(event);
         },
     });
-    if (!nextMetricNumber) {
-        nextMetricNumber = 0;
-    }
-
-    this.eventLogger = new MicroMetricLogger(this.screencastId, this.screencastName, nextMetricNumber);
+    this.eventLogger = new MicroMetricLogger(this.screencastId, this.screencastName, widgets, nextMetricNumber);
     this.eventLogger.startLogging();
 };
 
 ScreenRecorder.prototype.setUp = function () {
     this.events = [];
+    this.allEvents = [];
     const me = this;
     function pauseScreencast() {
         if (me.recording) {
             me.pauseRecording();
+            me.eventLogger.pauseLogging();
             browser.storage.local.set({"events": me.events});
+            browser.storage.local.set({"allEvents": me.allEvents});
             browser.storage.local.set({"nextMetricNumber": me.eventLogger.nextID});
+            browser.storage.local.set({"widgets": me.eventLogger.getMicroMetrics()});
         }
     };
     window.onunload = pauseScreencast;
@@ -88,7 +89,8 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
             me.screencastId = data.screencastId;
             me.screencastName = data.screencastName;
             me.events = data.events;
-            me.startRecording(data.nextMetricNumber);
+            me.allEvents = data.allEvents;
+            me.startRecording(data.widgets,data.nextMetricNumber);
         }
     });
 };

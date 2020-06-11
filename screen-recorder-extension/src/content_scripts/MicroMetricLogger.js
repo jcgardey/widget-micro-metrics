@@ -295,11 +295,11 @@ RadioSetLogs.prototype.getWidgetLabel = function (widget) {
     return widget.getLabel();
 }
 
-function MicroMetricLogger(screencastId, volunteerName, nextID) {
+function MicroMetricLogger(screencastId, volunteerName, widgets, nextID) {
     this.screencastId = screencastId;
     this.volunteerName = volunteerName;
-    this.widgets = {};
-    this.nextID = nextID;
+    this.widgets = widgets ? widgets: {};
+    this.nextID = nextID ? nextID: 0;
     this.loggers = {
         text: TextInputLogs,
         select: SelectInputLogs,
@@ -409,7 +409,7 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.radiosetSelection.setUp();
 }
 
-MicroMetricLogger.prototype.stopLogging = function () {
+MicroMetricLogger.prototype.pauseLogging = function () {
     this.focusTime.tearDown();
     this.typingLatency.tearDown();
     this.typingSpeed.tearDown();
@@ -429,7 +429,10 @@ MicroMetricLogger.prototype.stopLogging = function () {
     this.optionsSelected.tearDown();
     this.radiosetMisClick.tearDown();
     this.radiosetSelection.tearDown();
+}
 
+MicroMetricLogger.prototype.stopLogging = function () {
+    this.pauseLogging();
     document.querySelectorAll('[data-metric-id]').forEach(function (element) {
         element.removeAttribute('data-metric-id')
     });
@@ -440,7 +443,11 @@ MicroMetricLogger.prototype.stopLogging = function () {
     });
     this.screencastId = null;
     this.volunteerName = null;
-}
+};
+
+MicroMetricLogger.prototype.getMicroMetrics = function () {
+    return this.widgets;
+};
 
 MicroMetricLogger.prototype.getRadioGroups = function () {
     if (!this.radioGroups) {
