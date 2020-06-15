@@ -40,4 +40,8 @@ class WidgetGroup {
         });
         return html;
     }
+
+    getXPathCollection() {
+        return this.elements.map(elem => elem.getXPath());
+    }
 }

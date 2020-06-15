@@ -46,6 +46,14 @@ HTMLElement.prototype.getHTML = function () {
     return this.outerHTML;
 }
 
+HTMLElement.prototype.getXPathCollection = function () {
+    return [this.getXPath()];
+}
+
+HTMLElement.prototype.getXPath = function () {
+    return new XPathInterpreter().getPath(this, document.body);
+}
+
 HTMLElement.prototype.getCenter = function () {
     const currentElementBox = this.getAbsoluteBoundingClientRect();
     return {x: currentElementBox.x + (currentElementBox.width / 2), y: currentElementBox.y + (currentElementBox.height / 2)}
@@ -287,12 +295,11 @@ RadioSetLogs.prototype.getWidgetLabel = function (widget) {
     return widget.getLabel();
 }
 
-function MicroMetricLogger(screencastId, volunteerName, serverURL) {
+function MicroMetricLogger(screencastId, volunteerName, widgets, nextID) {
     this.screencastId = screencastId;
     this.volunteerName = volunteerName;
-    this.serverURL = serverURL;
-    this.widgets = {};
-    this.nextID = 0;
+    this.widgets = widgets ? widgets: {};
+    this.nextID = nextID ? nextID: 0;
     this.loggers = {
         text: TextInputLogs,
         select: SelectInputLogs,
@@ -339,6 +346,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
             this.widgets[metricId] = new WidgetLogs(anElement).getMetrics();
         }
         this.widgets[metricId].html = anElement.getHTML();
+        this.widgets[metricId].xpath = anElement.getXPathCollection();
         this.widgets[metricId].id = metricId;
         this.widgets.volunteer = this.volunteer;
     }
@@ -401,7 +409,7 @@ MicroMetricLogger.prototype.startLogging = function () {
     this.radiosetSelection.setUp();
 }
 
-MicroMetricLogger.prototype.stopLogging = function () {
+MicroMetricLogger.prototype.pauseLogging = function () {
     this.focusTime.tearDown();
     this.typingLatency.tearDown();
     this.typingSpeed.tearDown();
@@ -421,19 +429,26 @@ MicroMetricLogger.prototype.stopLogging = function () {
     this.optionsSelected.tearDown();
     this.radiosetMisClick.tearDown();
     this.radiosetSelection.tearDown();
+}
 
+MicroMetricLogger.prototype.stopLogging = function () {
+    this.pauseLogging();
     document.querySelectorAll('[data-metric-id]').forEach(function (element) {
         element.removeAttribute('data-metric-id')
     });
-    console.log(this.widgets);
+    console.log(JSON.stringify(this.widgets));
+    /**
     browser.runtime.sendMessage({
         "message": "sendLogs",
-        "url": this.serverURL,
         "logs": {"metrics": this.widgets, "screencastId": this.screencastId}
-    });
+    });*/
     this.screencastId = null;
     this.volunteerName = null;
-}
+};
+
+MicroMetricLogger.prototype.getMicroMetrics = function () {
+    return this.widgets;
+};
 
 MicroMetricLogger.prototype.getRadioGroups = function () {
     if (!this.radioGroups) {
@@ -1230,29 +1245,22 @@ class SelectOptionsDisplayTime extends MicroMetric {
 
     constructor(logger) {
         super(logger);
-        this.optionsDisplayed = false;
         this.onClick = this.onClick.bind(this);
         this.onChange = this.onChange.bind(this);
     }
 
     setUp() {
         addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onClick);
-        addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "change", this.onChange);
+        addEventListener("div[widget-type='select'], div[widget-type='date-select']", "change", this.onChange);
     }
 
     tearDown() {
         removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onClick);
-        removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "change", this.onChange);
+        removeEventListener("div[widget-type='select'], div[widget-type='date-select']", "change", this.onChange);
     }
 
     onClick(event) {
-        if (!this.optionsDisplayed) {
-            this.startTime = event.timeStamp;
-        }
-        else {
-            this.microMetricLogger.getWidgetLogs(event.target.parentNode).optionsDisplayTime += this.getOptionsDisplayTime(event);
-        }
-        this.optionsDisplayed = !this.optionsDisplayed;
+        this.startTime = event.timeStamp;
     }
 
     getOptionsDisplayTime(event) {
@@ -1261,7 +1269,6 @@ class SelectOptionsDisplayTime extends MicroMetric {
 
     onChange(event) {
         this.microMetricLogger.getWidgetLogs(event.target).optionsDisplayTime += this.getOptionsDisplayTime(event);
-        this.optionsDisplayed = false;
     }
 }
 

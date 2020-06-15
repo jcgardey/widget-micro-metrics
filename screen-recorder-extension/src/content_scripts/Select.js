@@ -126,6 +126,7 @@ class CustomSelect {
         this.title.style.width = window.getComputedStyle(this.originalSelect).getPropertyValue("width");
         this.title.style.height = window.getComputedStyle(this.originalSelect).getPropertyValue("height");
         this.title.style.padding = window.getComputedStyle(this.originalSelect).getPropertyValue("padding");
+        this.title.style.margin = window.getComputedStyle(this.originalSelect).getPropertyValue("margin");
         this.title.style.border = window.getComputedStyle(this.originalSelect).getPropertyValue("border");
         this.title.style.background = "url('https://selfrefactoring.s3.amazonaws.com/testsites/arrow-down.svg') right 10px center no-repeat";
 
