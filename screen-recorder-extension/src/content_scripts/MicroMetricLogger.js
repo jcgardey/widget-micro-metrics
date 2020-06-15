@@ -436,11 +436,12 @@ MicroMetricLogger.prototype.stopLogging = function () {
     document.querySelectorAll('[data-metric-id]').forEach(function (element) {
         element.removeAttribute('data-metric-id')
     });
-    console.log(this.widgets);
+    console.log(JSON.stringify(this.widgets));
+    /**
     browser.runtime.sendMessage({
         "message": "sendLogs",
         "logs": {"metrics": this.widgets, "screencastId": this.screencastId}
-    });
+    });*/
     this.screencastId = null;
     this.volunteerName = null;
 };

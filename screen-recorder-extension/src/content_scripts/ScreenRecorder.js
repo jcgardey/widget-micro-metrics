@@ -18,6 +18,8 @@ ScreenRecorder.prototype.toggleRecording = function () {
         browser.storage.local.remove(["screencastId", "screencastName", "events", "widgets" ,"nextMetricNumber"]);
         browser.runtime.sendMessage({"message": "stop"});
         console.log("all events ", this.allEvents);
+        browser.runtime.sendMessage({"message":"save", "data":{"events": this.allEvents, "screencastName": this.screencastName,
+                "screencastId": this.screencastId, "metrics": this.eventLogger.getMicroMetrics()}});
     }
 }
 
@@ -62,16 +64,13 @@ ScreenRecorder.prototype.setUp = function () {
         if (me.recording) {
             me.pauseRecording();
             me.eventLogger.pauseLogging();
-            browser.storage.local.set({"events": me.events});
-            browser.storage.local.set({"allEvents": me.allEvents});
-            browser.storage.local.set({"nextMetricNumber": me.eventLogger.nextID});
-            browser.storage.local.set({"widgets": me.eventLogger.getMicroMetrics()});
+            browser.storage.local.set({"events": me.events, "allEvents": me.allEvents, "nextMetricNumber": me.eventLogger.nextID, "widgets": me.eventLogger.getMicroMetrics()});
         }
     };
-    window.onunload = pauseScreencast;
+    window.onbeforeunload = pauseScreencast;
     window.onblur = pauseScreencast;
     // this function will send events to the backend and reset the events array
-    setInterval(this.save.bind(this), 10000);
+    //setInterval(this.save.bind(this), 10000);
 };
 
 ScreenRecorder.prototype.save = function (flag) {
