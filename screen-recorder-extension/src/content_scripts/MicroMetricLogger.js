@@ -1244,29 +1244,22 @@ class SelectOptionsDisplayTime extends MicroMetric {
 
     constructor(logger) {
         super(logger);
-        this.optionsDisplayed = false;
         this.onClick = this.onClick.bind(this);
         this.onChange = this.onChange.bind(this);
     }
 
     setUp() {
         addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onClick);
-        addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "change", this.onChange);
+        addEventListener("div[widget-type='select'], div[widget-type='date-select']", "change", this.onChange);
     }
 
     tearDown() {
         removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onClick);
-        removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "change", this.onChange);
+        removeEventListener("div[widget-type='select'], div[widget-type='date-select']", "change", this.onChange);
     }
 
     onClick(event) {
-        if (!this.optionsDisplayed) {
-            this.startTime = event.timeStamp;
-        }
-        else {
-            this.microMetricLogger.getWidgetLogs(event.target.parentNode).optionsDisplayTime += this.getOptionsDisplayTime(event);
-        }
-        this.optionsDisplayed = !this.optionsDisplayed;
+        this.startTime = event.timeStamp;
     }
 
     getOptionsDisplayTime(event) {
@@ -1275,7 +1268,6 @@ class SelectOptionsDisplayTime extends MicroMetric {
 
     onChange(event) {
         this.microMetricLogger.getWidgetLogs(event.target).optionsDisplayTime += this.getOptionsDisplayTime(event);
-        this.optionsDisplayed = false;
     }
 }
 
