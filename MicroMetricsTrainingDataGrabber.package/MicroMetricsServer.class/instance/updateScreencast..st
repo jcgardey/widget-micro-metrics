@@ -10,4 +10,5 @@ updateScreencast: request
 				name: (jsonBody at: 'screencastName')
 				events: (jsonBody at: 'events') asOrderedCollection ]
 		ifNotNil: [ screencastFound addEvents: (jsonBody at: 'events') asOrderedCollection ].
+	self captureMetricFrom: (jsonBody at: 'metrics') for: screencastFound. 	
 	screencastFound save.
