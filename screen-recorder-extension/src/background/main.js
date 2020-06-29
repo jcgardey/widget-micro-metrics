@@ -27,15 +27,19 @@ browser.runtime.onMessage.addListener(function (request) {
    }
    else if (request.message == "stop") {
        browser.browserAction.setIcon({path: {"64": "resources/play_icon.png"}});
+       browser.storage.local.get().then(function (data) {
+           const body = {"events": data.allEvents.concat(request.data.events), "metrics": request.data.metrics, "screencastId": data.screencastId, "screencastName": data.screencastName};
+           sendRequest(data.serverURL + "screencast", JSON.stringify(body));
+       });
+       browser.storage.local.remove(["screencastId", "screencastName", "events", "widgets" ,"nextMetricNumber"]);
    }
 });
 
 browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "save") {
-        const data = JSON.stringify(request.data);
-        browser.storage.local.get("serverURL").then(function (result) {
-            var url = result.serverURL + "screencast";
-            sendRequest(url, data);
+        browser.storage.local.get("allEvents").then(function (data) {
+            const allEvents = data.allEvents.concat(request.data.events);
+            browser.storage.local.set({"allEvents": allEvents, "widgets": request.data.metrics, "nextMetricNumber": request.data.nextMetricNumber});
         });
     }
 });

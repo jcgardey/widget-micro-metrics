@@ -8,18 +8,12 @@ ScreenRecorder.prototype.toggleRecording = function () {
     if (!this.recording) {
         this.screencastId = Math.random().toString(36).substring(2, 15) + "-" + Date.now();
         this.screencastName = this.getNextID();
-        browser.storage.local.set({"screencastId": this.screencastId});
-        browser.storage.local.set({"screencastName": this.screencastName});
+        browser.storage.local.set({"screencastId": this.screencastId, "screencastName": this.screencastName, "allEvents": []});
         browser.runtime.sendMessage({"message": "start", "screencastId": this.screencastId, "screencastName": this.screencastName});
     }
     else {
         this.pauseRecording();
-        this.eventLogger.stopLogging();
-        browser.storage.local.remove(["screencastId", "screencastName", "events", "widgets" ,"nextMetricNumber"]);
-        browser.runtime.sendMessage({"message": "stop"});
-        console.log("all events ", this.allEvents);
-        browser.runtime.sendMessage({"message":"save", "data":{"events": this.allEvents, "screencastName": this.screencastName,
-                "screencastId": this.screencastId, "metrics": this.eventLogger.getMicroMetrics()}});
+        browser.runtime.sendMessage({"message": "stop",  "data":{"metrics": this.eventLogger.getMicroMetrics(), "events": this.events}});
     }
 }
 
@@ -49,7 +43,6 @@ ScreenRecorder.prototype.startRecording = function (widgets,nextMetricNumber) {
     this.stopScreencast = rrweb.record({
         emit(event) {
             me.events.push(event);
-            me.allEvents.push(event);
         },
     });
     this.eventLogger = new MicroMetricLogger(this.screencastId, this.screencastName, widgets, nextMetricNumber);
@@ -59,24 +52,24 @@ ScreenRecorder.prototype.startRecording = function (widgets,nextMetricNumber) {
 ScreenRecorder.prototype.setUp = function () {
     this.events = [];
     this.allEvents = [];
-    const me = this;
-    function pauseScreencast() {
-        if (me.recording) {
-            me.pauseRecording();
-            me.eventLogger.pauseLogging();
-            browser.storage.local.set({"events": me.events, "allEvents": me.allEvents, "nextMetricNumber": me.eventLogger.nextID, "widgets": me.eventLogger.getMicroMetrics()});
-        }
-    };
-    window.onbeforeunload = pauseScreencast;
-    window.onblur = pauseScreencast;
+    window.onbeforeunload = this.saveScreencast.bind(this);
+    window.onblur = this.saveScreencast.bind(this);
     // this function will send events to the backend and reset the events array
-    //setInterval(this.save.bind(this), 10000);
+    setInterval(this.save.bind(this), 5000);
 };
 
-ScreenRecorder.prototype.save = function (flag) {
-    if (this.events.length > 0) {
-        browser.runtime.sendMessage({"message":"save", "data":{"events": this.events, "screencastName": this.screencastName,
-                "screencastId": this.screencastId, "url": document.location.href, "flag": flag}});
+ScreenRecorder.prototype.saveScreencast = function () {
+    if (this.recording) {
+        this.pauseRecording();
+        this.save(true);
+        this.eventLogger.pauseLogging();
+    }
+};
+
+ScreenRecorder.prototype.save = function (updateMetrics) {
+    if (this.events.length > 0 || updateMetrics) {
+        browser.runtime.sendMessage({"message":"save", "data":{"events": this.events, "metrics": this.eventLogger.getMicroMetrics(),
+                "nextMetricNumber": this.eventLogger.nextID}});
         this.events = [];
     }
 }
@@ -87,8 +80,6 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
         if (data.screencastId) {
             me.screencastId = data.screencastId;
             me.screencastName = data.screencastName;
-            me.events = data.events;
-            me.allEvents = data.allEvents;
             me.startRecording(data.widgets,data.nextMetricNumber);
         }
     });
