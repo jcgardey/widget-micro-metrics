@@ -436,7 +436,6 @@ MicroMetricLogger.prototype.stopLogging = function () {
     document.querySelectorAll('[data-metric-id]').forEach(function (element) {
         element.removeAttribute('data-metric-id')
     });
-    console.log(JSON.stringify(this.widgets));
     /**
     browser.runtime.sendMessage({
         "message": "sendLogs",
@@ -463,7 +462,7 @@ MicroMetricLogger.prototype.getRadioGroups = function () {
             allLabels = Array.from(document.getElementsByTagName('label'));
             closestLabel = allLabels.reduce((min, current) => current.distanceToPoint(inputX, inputY) < min.distanceToPoint(inputX, inputY) ? current : min, allLabels[0])
             */
-            allLabels = Array.from(input.parentNode.parentNode.querySelectorAll("label"));
+            allLabels = Array.from(input.parentNode.parentNode.querySelectorAll("label, span"));
             closestLabel = allLabels.reduce((min, current) => current.euclidianDistanceToElement(input) < min.euclidianDistanceToElement(input) ? current : min, allLabels[0]);
 
             if (typeof(this.radioGroups[input.name]) == "undefined") {
@@ -789,7 +788,7 @@ class MouseDwellTime extends MicroMetric {
     constructor(logger) {
         super(logger);
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-        this.dwellThreshold = 600;
+        this.dwellThreshold = 400;
     }
 
     setUp() {
