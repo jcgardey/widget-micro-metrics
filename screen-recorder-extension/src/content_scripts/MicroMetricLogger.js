@@ -265,7 +265,12 @@ function AnchorLogs(widget) {
 AnchorLogs.prototype = Object.create(WidgetLogs.prototype);
 
 AnchorLogs.prototype.getWidgetLabel = function (widget) {
-    return widget.textContent;
+    if (widget.querySelector("img") && widget.querySelector("img").getAttribute("alt")) {
+        return widget.querySelector("img").getAttribute("alt");
+    }
+    else {
+        return widget.textContent;
+    }
 }
 
 function DatepickerLogs(widget) {
