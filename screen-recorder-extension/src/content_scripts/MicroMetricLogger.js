@@ -812,7 +812,9 @@ class MouseDwellTime extends MicroMetric {
             var dwellTime = now - this.lastTimestamp;
             this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
             if (dwellTime >= this.dwellThreshold) {
-                this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                if (this.lastWidget.getAttribute("widget-type") != "text" && this.lastWidget.getAttribute("widget-type") != "datepicker") {
+                    this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                }
                 this.microMetricLogger.logWidget(this.lastWidget);
             }
         }
@@ -832,7 +834,7 @@ class MouseDwellTime extends MicroMetric {
 class Interactions extends MicroMetric {
     constructor(logger) {
         super(logger);
-        this.targetElementsSelector = "input[widget-type='text'],select,input[widget-type='datepicker']";
+        this.targetElementsSelector = "input[widget-type='text'],input[widget-type='datepicker']";
         this.focusHandler = this.focusHandler.bind(this);
     }
 
@@ -846,7 +848,6 @@ class Interactions extends MicroMetric {
 
     focusHandler(event) {
         this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
-        console.log("interactions ", this.microMetricLogger.getWidgetLogs(event.target).interactions);
     }
 }
 
