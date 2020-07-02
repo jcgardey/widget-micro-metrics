@@ -1,11 +1,12 @@
 function ScreenRecorder () {
     this.recording = false;
+    this.paused = false;
     this.events = [];
 
 }
 
 ScreenRecorder.prototype.toggleRecording = function () {
-    if (!this.recording) {
+    if (!this.recording && !this.paused) {
         this.screencastId = Math.random().toString(36).substring(2, 15) + "-" + Date.now();
         this.screencastName = this.getNextID();
         browser.storage.local.set({"screencastId": this.screencastId, "screencastName": this.screencastName, "allEvents": []});
@@ -13,12 +14,14 @@ ScreenRecorder.prototype.toggleRecording = function () {
     }
     else {
         this.pauseRecording();
+        this.recording = false;
         browser.runtime.sendMessage({"message": "stop",  "data":{"metrics": this.eventLogger.getMicroMetrics(), "events": this.events}});
     }
 }
 
 ScreenRecorder.prototype.pauseRecording = function () {
     this.stopScreencast();
+    this.paused = true;
     this.recording = false;
 }
 
@@ -39,6 +42,7 @@ ScreenRecorder.prototype.getNextID = function () {
 
 ScreenRecorder.prototype.startRecording = function (widgets,nextMetricNumber) {
     this.recording = true;
+    this.paused = false;
     const me = this;
     this.stopScreencast = rrweb.record({
         emit(event) {
@@ -59,7 +63,7 @@ ScreenRecorder.prototype.setUp = function () {
 };
 
 ScreenRecorder.prototype.saveScreencast = function () {
-    if (this.recording) {
+    if (this.recording && !this.paused) {
         this.pauseRecording();
         this.save(true);
         this.eventLogger.pauseLogging();
@@ -87,8 +91,16 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
 
 var screenRecorder = new ScreenRecorder();
 screenRecorder.setUp();
-screenRecorder.checkExistingScreencast();
 
+function resumeCurrentTab () {
+    if (!screenRecorder.recording) {
+        screenRecorder.checkExistingScreencast();
+    }
+}
+
+
+window.onload = resumeCurrentTab;
+window.onfocus = resumeCurrentTab;
 
 
 browser.runtime.onMessage.addListener((request, sender) => {
