@@ -3,5 +3,5 @@ id: aString name: anotherString events: aCollection
 	^ self new 
 		id: aString;
 		screencastName: anotherString;
-		events: aCollection;
+		addEvents: aCollection;
 		yourself.
