@@ -265,7 +265,12 @@ function AnchorLogs(widget) {
 AnchorLogs.prototype = Object.create(WidgetLogs.prototype);
 
 AnchorLogs.prototype.getWidgetLabel = function (widget) {
-    return widget.textContent;
+    if (widget.querySelector("img") && widget.querySelector("img").getAttribute("alt")) {
+        return widget.querySelector("img").getAttribute("alt");
+    }
+    else {
+        return widget.textContent;
+    }
 }
 
 function DatepickerLogs(widget) {
@@ -436,7 +441,6 @@ MicroMetricLogger.prototype.stopLogging = function () {
     document.querySelectorAll('[data-metric-id]').forEach(function (element) {
         element.removeAttribute('data-metric-id')
     });
-    console.log(JSON.stringify(this.widgets));
     /**
     browser.runtime.sendMessage({
         "message": "sendLogs",
@@ -463,7 +467,7 @@ MicroMetricLogger.prototype.getRadioGroups = function () {
             allLabels = Array.from(document.getElementsByTagName('label'));
             closestLabel = allLabels.reduce((min, current) => current.distanceToPoint(inputX, inputY) < min.distanceToPoint(inputX, inputY) ? current : min, allLabels[0])
             */
-            allLabels = Array.from(input.parentNode.parentNode.querySelectorAll("label"));
+            allLabels = Array.from(input.parentNode.parentNode.querySelectorAll("label, span"));
             closestLabel = allLabels.reduce((min, current) => current.euclidianDistanceToElement(input) < min.euclidianDistanceToElement(input) ? current : min, allLabels[0]);
 
             if (typeof(this.radioGroups[input.name]) == "undefined") {
@@ -789,7 +793,7 @@ class MouseDwellTime extends MicroMetric {
     constructor(logger) {
         super(logger);
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
-        this.dwellThreshold = 600;
+        this.dwellThreshold = 400;
     }
 
     setUp() {
@@ -808,7 +812,9 @@ class MouseDwellTime extends MicroMetric {
             var dwellTime = now - this.lastTimestamp;
             this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
             if (dwellTime >= this.dwellThreshold) {
-                this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                if (this.lastWidget.getAttribute("widget-type") != "text" && this.lastWidget.getAttribute("widget-type") != "datepicker") {
+                    this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+                }
                 this.microMetricLogger.logWidget(this.lastWidget);
             }
         }
@@ -828,7 +834,7 @@ class MouseDwellTime extends MicroMetric {
 class Interactions extends MicroMetric {
     constructor(logger) {
         super(logger);
-        this.targetElementsSelector = "input[widget-type='text'],select,input[widget-type='datepicker']";
+        this.targetElementsSelector = "input[widget-type='text'],input[widget-type='datepicker']";
         this.focusHandler = this.focusHandler.bind(this);
     }
 
@@ -842,7 +848,6 @@ class Interactions extends MicroMetric {
 
     focusHandler(event) {
         this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
-        console.log("interactions ", this.microMetricLogger.getWidgetLogs(event.target).interactions);
     }
 }
 

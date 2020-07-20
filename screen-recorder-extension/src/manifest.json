@@ -10,11 +10,9 @@
       "node_modules/rrweb/dist/rrweb.js",
       "node_modules/jquery/dist/jquery.js",
       "content_scripts/RecorderModal.js",
-      "content_scripts/Select.js",
       "content_scripts/WidgetGroup.js",
       "content_scripts/DateSelects.js",
       "content_scripts/RadioGroup.js",
-      "content_scripts/PagePatches.js",
       "content_scripts/XPathInterpreter.js",
       "content_scripts/MicroMetriclogger.js",
       "content_scripts/ScreenRecorder.js"
