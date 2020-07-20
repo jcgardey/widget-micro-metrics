@@ -1,43 +1,40 @@
 
-function RecorderModal(aScreenRecorder) {
-    this.createModal();
-    this.screenRecorder = aScreenRecorder;
+function RecorderModal() {
+    this.create();
 }
 
-RecorderModal.prototype.createModal = function () {
-    const div = document.createElement("div");
-    div.id = "recorder-container";
-    const title = document.createElement("h3");
-    title.innerHTML = "Screen Recorder";
-    div.appendChild(title);
+RecorderModal.prototype.create = function () {
+    const iframe = document.createElement("iframe");
+    iframe.id = "recorder-container";
+    document.body.appendChild(iframe);
+    this.div = document.createElement("div");
+    this.div.style.width = "100%";
+    this.div.style.height = "100%";
+    this.div.style.backgroundColor =  "#4d4d4d";
+    iframe.contentDocument.body.appendChild(this.div);
+    iframe.contentDocument.body.style.margin = "0px";
+    this.div.className = ".rr-ignore";
+    const title = document.createElement("h5");
+    title.innerHTML = "Grabando";
+    title.style.color = "whitesmoke";
+    title.style.fontFamily = "sans-serif";
+    title.style.textAlign = "center";
+    title.style.margin = "auto";
 
-    const label = document.createElement("p");
-    label.innerHTML = "Screencast Name";
-    div.appendChild(label);
-
-    this.nameInput = document.createElement("input");
-    div.appendChild(this.nameInput);
-
-    const buttonContainer = document.createElement("p");
-    this.button = document.createElement("input");
-    this.button.value = "Start";
-    this.button.setAttribute("type", "button");
-    buttonContainer.appendChild(this.button);
-    div.appendChild(buttonContainer);
-    div.style.display = "none";
-
+    this.div.appendChild(title);
     const me = this;
-    this.button.addEventListener("click", function (event) {
-        me.screenRecorder.screencastName = me.nameInput.value;
+    this.div.addEventListener("mouseenter", function (event) {
         me.hide();
-        me.screenRecorder.startRecording();
     });
-    document.body.appendChild(div);
+    this.div.addEventListener("mouseleave", function (event) {
+        me.show();
+    });
+    this.hide();
 };
 
 RecorderModal.prototype.show = function () {
-    document.querySelector("#recorder-container").style.display = "";
+    this.div.style.display = "";
 };
 RecorderModal.prototype.hide = function () {
-    document.querySelector("#recorder-container").style.display = "none";
+    this.div.style.display = "none";
 };

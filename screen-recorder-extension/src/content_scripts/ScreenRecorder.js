@@ -2,7 +2,7 @@ function ScreenRecorder () {
     this.recording = false;
     this.paused = false;
     this.events = [];
-
+    this.modal = new RecorderModal();
 }
 
 ScreenRecorder.prototype.toggleRecording = function () {
@@ -11,6 +11,7 @@ ScreenRecorder.prototype.toggleRecording = function () {
         this.screencastName = this.getNextID();
         browser.storage.local.set({"screencastId": this.screencastId, "screencastName": this.screencastName, "allEvents": []});
         browser.runtime.sendMessage({"message": "start", "screencastId": this.screencastId, "screencastName": this.screencastName});
+        screenRecorder.startRecording();
     }
     else {
         this.pauseRecording();
@@ -21,6 +22,7 @@ ScreenRecorder.prototype.toggleRecording = function () {
 
 ScreenRecorder.prototype.pauseRecording = function () {
     this.stopScreencast();
+    this.modal.hide();
     this.paused = true;
     this.recording = false;
 }
@@ -41,6 +43,7 @@ ScreenRecorder.prototype.getNextID = function () {
 };
 
 ScreenRecorder.prototype.startRecording = function (widgets,nextMetricNumber) {
+    this.modal.show();
     this.recording = true;
     this.paused = false;
     const me = this;

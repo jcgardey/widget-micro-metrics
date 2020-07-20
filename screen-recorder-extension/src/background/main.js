@@ -17,19 +17,15 @@ browser.browserAction.onClicked.addListener(function () {
 
 browser.runtime.onMessage.addListener(function (request) {
    if (request.message == "start") {
-       browser.storage.local.get("serverURL").then(function (result) {
-           var url = result.serverURL + "start_screencast";
-           sendRequest(url, {"screencastId": request.screencastId, "screencastName": request.screencastName}, function (response) {
-               sendMessageCurrentTab({"message": "start_recording"});
-               browser.browserAction.setIcon({path: {"64": "resources/stop_icon.jpg"}});
-           });
-       });
+       browser.browserAction.setIcon({path: {"64": "resources/stop_icon.png"}});
    }
    else if (request.message == "stop") {
        browser.browserAction.setIcon({path: {"64": "resources/play_icon.png"}});
        browser.storage.local.get().then(function (data) {
-           const body = {"events": data.allEvents.concat(request.data.events), "metrics": request.data.metrics, "screencastId": data.screencastId, "screencastName": data.screencastName};
-           sendRequest(data.serverURL + "screencast", JSON.stringify(body));
+           if (data.screencastId) {
+               const body = {"events": data.allEvents.concat(request.data.events), "metrics": request.data.metrics, "screencastId": data.screencastId, "screencastName": data.screencastName};
+               sendRequest(data.serverURL + "screencast", JSON.stringify(body));
+           }
        });
        browser.storage.local.remove(["screencastId", "screencastName", "events", "widgets" ,"nextMetricNumber"]);
    }
