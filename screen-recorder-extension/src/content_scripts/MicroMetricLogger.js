@@ -793,6 +793,7 @@ class MouseDwellTime extends MicroMetric {
     constructor(logger) {
         super(logger);
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
+        this.clickHandler = this.clickHandler.bind(this);
         this.dwellThreshold = 400;
     }
 
@@ -800,11 +801,12 @@ class MouseDwellTime extends MicroMetric {
         this.lastWidget = null;
         this.lastTimestamp = null;
         document.addEventListener("mousemove", this.mouseMoveHandler);
+        addEventListener("a:not([data-micrometric-logger='no-capture'])", "click", this.clickHandler);
     }
 
     tearDown() {
         document.removeEventListener("mousemove", this.mouseMoveHandler);
-        this.updateDwellTime(Date.now());
+        removeEventListener("a:not([data-micrometric-logger='no-capture'])", "click", this.clickHandler);
     }
 
     updateDwellTime(now) {
@@ -828,6 +830,11 @@ class MouseDwellTime extends MicroMetric {
             this.lastWidget = this.currentWidget;
             this.lastTimestamp = now;
         }
+    }
+
+    clickHandler(event) {
+        this.updateDwellTime(event.timeStamp);
+        this.lastWidget = null;
     }
 }
 
