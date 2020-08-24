@@ -7,8 +7,7 @@ updateScreencast: request
 	screencastFound
 		ifNil: [ screencastFound := Screencast
 				id: (jsonBody at: 'screencastId')
-				name: (jsonBody at: 'screencastName')
-				events: (jsonBody at: 'events') asOrderedCollection ]
-		ifNotNil: [ screencastFound addEvents: (jsonBody at: 'events') asOrderedCollection ].
+				name: (jsonBody at: 'screencastName')].
+		screencastFound addEvents: ((jsonBody at: 'events') collect: [ :eventDict | ScreencastEvent values: eventDict ]).
 	self captureMetricFrom: (jsonBody at: 'metrics') for: screencastFound. 	
 	screencastFound save.

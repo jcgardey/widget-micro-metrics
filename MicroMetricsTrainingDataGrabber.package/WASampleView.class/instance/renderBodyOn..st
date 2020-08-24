@@ -4,10 +4,15 @@ renderBodyOn: html
 		id: #screencast_id;
 		value: self sample id.
 	html tbsColumn
-		id: #replayer;
-		mediumSize: 9.
-	html
-		tbsColumn 
+		mediumSize: 9;
+		with: [ html div id: #replayer.
+			html anchor
+				class: 'btn btn-danger';
+				style: 'margin-top: 10px';
+				callback: [ self removeSample ];
+				with: 'Eliminar Screencast'.
+			html span with: ' (No se puede deshacer!)' ].
+	html tbsColumn
 		id: #metricsRaterColumn;
 		mediumSize: 3;
 		with: [ html paragraph: [ self renderMergeModeButtonOn: html ].
