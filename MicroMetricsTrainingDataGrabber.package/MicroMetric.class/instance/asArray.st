@@ -1,15 +1,8 @@
 converting
 asArray
 	" converts metric to an array removing authorId, volunteer and widgetType. Add rating to the last position"
-
-	| values metricKeys |
-	values := OrderedCollection new.
-	metricKeys := self valuesDictionary keys asOrderedCollection.
-	metricKeys
-		removeAll: #(widgetType authorId volunteer);
-		remove: #mouseTraceLength ifAbsent: [  ];
-		remove: #interactions ifAbsent: [  ].
-	metricKeys do: [ :key | values add: (self valuesDictionary at: key) asNumber ].
+	| values |
+	values :=  self keys collect: [ :key | (self valuesDictionary at: key) ].
 	self ratings isNotEmpty
-		ifTrue: [ values add: self consolidatedRating asNumber ].
+		ifTrue: [ values add: self consolidatedRating asNumber ] ifFalse: [values add:0].
 	^ values
