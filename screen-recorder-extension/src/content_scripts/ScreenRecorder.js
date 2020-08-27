@@ -16,6 +16,7 @@ ScreenRecorder.prototype.toggleRecording = function () {
     else {
         this.pauseRecording();
         this.recording = false;
+        this.eventLogger.stopLogging(); 
         browser.runtime.sendMessage({"message": "stop",  "data":{"metrics": this.eventLogger.getMicroMetrics(), "events": this.events}});
     }
 }
