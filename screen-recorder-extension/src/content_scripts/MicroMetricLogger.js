@@ -664,14 +664,12 @@ class TypingSpeed extends MicroMetric {
             this.startTime = event.timeStamp;
         }
         this.charsTyped++;
+        this.typingSpeed = (event.timeStamp - this.startTime) / this.charsTyped;
+        this.microMetricLogger.getWidgetLogs(event.target).typingSpeed += this.typingSpeed;
     }
 
-    blurHandler(event) {
-        if (this.charsTyped > 0) {
-            this.typingSpeed = (event.timeStamp - this.startTime) / this.charsTyped;
-            this.microMetricLogger.getWidgetLogs(event.target).typingSpeed += this.typingSpeed;
-            this.charsTyped = 0;
-        }
+    blurHandler(event) {    
+        this.charsTyped = 0;
     }
 }
 
@@ -698,6 +696,7 @@ class TypingVariance extends MicroMetric {
             var switchingTime = event.timeStamp;
             var intraKeypressInterval = switchingTime - this.lastKeypressTimestamp;
             this.microMetricLogger.getWidgetLogs(event.target).typingIntervals.push(intraKeypressInterval);
+            this.updateStandardDeviation();
         }
         this.lastKeypressTimestamp = event.timeStamp;
     }
@@ -719,9 +718,12 @@ class TypingVariance extends MicroMetric {
     }
 
     blurHandler(event) {
+        this.lastKeypressTimestamp = 0;
+    }
+
+    updateStandardDeviation() {
         var variance = this.standardDeviation(this.microMetricLogger.getWidgetLogs(event.target).typingIntervals);
         this.microMetricLogger.getWidgetLogs(event.target).typingVariance = variance;
-        this.lastKeypressTimestamp = 0;
     }
 }
 
