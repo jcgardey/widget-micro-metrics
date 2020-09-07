@@ -7,8 +7,15 @@ initializeWithPort: aPort
 	server
 		GET: '/micrometrics/ping' -> 'pong';
 		GET:
-			'/micrometrics/metricsData'
-				-> [ :request | TeaResponse ok body: self metricsCSVData ];
+			'/micrometrics/csv/<:widgetType>'
+				-> [ :request | TeaResponse ok 
+						headerName: 'Content-type' value: 'text/csv';
+						body: (self metricsToCSV: (request at: #widgetType) ranked: false)];
+		GET:
+			'/micrometrics/csv/ranked/<:widgetType>'
+				-> [ :request | TeaResponse ok 
+						headerName: 'Content-type' value: 'text/csv';
+						body: (self metricsToCSV: (request at: #widgetType) ranked: true)];
 		POST:
 			'/micrometrics/metrics/'
 				-> [ :request | 

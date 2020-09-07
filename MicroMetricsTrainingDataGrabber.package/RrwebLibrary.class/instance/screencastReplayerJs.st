@@ -4,71 +4,6 @@ screencastReplayerJs
   return document.querySelector("div.replayer-wrapper iframe");
 }
 
-var lastValue = null;
-function focusMicroMetric () {
-  var iframe = getIframe();
-  var micrometricId = iframe.contentDocument.querySelector("#micro-metric-id");
-  if (micrometricId) {
-    micrometricId = micrometricId.textContent;
-    if (micrometricId != lastValue) {
-        var allStrong = document.querySelectorAll("input.micrometricHiddenId");
-        for(i=0; i < allStrong.length; i++) {
-          if (allStrong[i].value == micrometricId) {
-            allStrong[i].parentNode.classList.add("currentMetric");
-				//scrollToSmoothly(allStrong[i].parentNode.offsetTop, 2000);
-          }
-          else if (allStrong[i].value == lastValue) {
-            allStrong[i].parentNode.classList.remove("currentMetric");
-          }
-        }
-        lastValue = micrometricId;
-		      //$("button.svelte-1cgfpn0")[0].click();
-  		  iframe.contentDocument.querySelectorAll("input,textarea").forEach(function(element){
-        if(element === document.activeElement) {
-            element.blur();
-        }
-    });
-  }
-  }
-}
-
-
-function scrollToSmoothly(pos, time) {
-  /*Time is only applicable for scrolling upwards*/
-  /*Code written by hev1*/
-  /*pos is the y-position to scroll to (in pixels)*/
-  var raterColumn = document.getElementById("metricsRaterColumn");
-  var currentPos = raterColumn.scrollTop;
-  var alreadyVisible = (pos > currentPos && (currentPos + raterColumn.clientHeight > pos));
-  if (isNaN(pos)) {
-    throw "Position must be a number";
-  }
-  if (pos < 0) {
-    throw "Position can not be negative";
-  }
-  if (!alreadyVisible)  {
-    if (currentPos < pos) {
-      var t = 10;
-      for (let i = currentPos; i <= pos; i += 10) {
-        t += 10;
-        setTimeout(function() { raterColumn.scrollTo(0, i);}, t / 2);
-      }
-    }
-    else {
-      time = time || 2;
-      var i = currentPos;
-      var x;
-      x = setInterval(function() {
-        raterColumn.scrollTo(0, i);
-        i -= 10;
-        if (i <= pos) {
-          clearInterval(x);
-        }
-      }, time);
-    }
-  }
-}
-
     $(document).ready(function () {
         if ($("#screencast_id").val()) {
             $.ajax({
@@ -76,6 +11,7 @@ function scrollToSmoothly(pos, time) {
               method: ''get'',
               dataType: ''json'',
               success: function (response) {
+                console.log(response);
                 new rrwebPlayer({
                   target: document.querySelector("#replayer"), // customizable root element
                   data: {
@@ -83,7 +19,6 @@ function scrollToSmoothly(pos, time) {
                     autoPlay: false,
                   },
                 });
-                setInterval(focusMicroMetric, 400);
                 registerMicroMetricsEvents();
               }
             });
@@ -126,27 +61,18 @@ function scrollToSmoothly(pos, time) {
         return Array.from(doc.body.children);
     }
 
+    function getElementByXpath(xpath, node) {
+      var doc = (node && node.ownerDocument)? node.ownerDocument : node;
+      var results = doc.evaluate(xpath, node, null, XPathResult.ANY_TYPE, null);
+      return results.iterateNext();
+    };
+
     function registerMicroMetricsEvents() {
       Array.from(document.querySelectorAll("div.panel-default")).map(div => {
           div.addEventListener("mouseenter", function () {
-              /**
-                var metricID = div.querySelector("input.micrometricHiddenId").value;
-                var widget = getIframe().contentDocument.querySelector("[data-metric-id=''" + metricID + "'']");
-                if (widget) {
-                    // if the select wrapper is hidden, the native select box is pointed
-                    if (widget.style.display == "none") {
-                      target = widget.nextElementSibling;
-                    }
-                    else {
-                      target = widget;
-                    }
-                    drawBoundingBox(target);
-                }
-                */
-              var widgets = parseWidget(div.querySelector("input.micrometricHiddenHTML").value);
-              widgets.map(element => {
-                  var selector = buildWidgetSelector(element);
-                  var targetWidget = getIframe().contentDocument.querySelector(selector);
+              var widgetsXpath = div.querySelector("input.micrometricHiddenXpath").value.split("\n");
+              widgetsXpath.map(elementXpath => {
+                  var targetWidget = getElementByXpath(elementXpath,getIframe().contentDocument.body);
                   if (targetWidget) {
                     drawBoundingBox(targetWidget);
                   }
