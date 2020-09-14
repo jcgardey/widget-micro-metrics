@@ -172,20 +172,20 @@ function drawBoundingBox(boundingBox) {
 
 /************************************************************/
 
+function setWidgetType(selector, widgetType) {
+    var allElements = document.querySelectorAll(selector);
+    for (let i = 0; i < allElements.length; i++) {
+        if (!allElements[i].getAttribute("widget-type")) {
+            allElements[i].setAttribute("widget-type", widgetType);
+        }
+    }
+}
+
 function initializeWidgetTypes() {
     // add widget-type attribute to text fields to differentiate from datepickers
-    var allTextInputs = document.querySelectorAll("input[type='text']");
-    for (let i = 0; i < allTextInputs.length; i++) {
-        if (!allTextInputs[i].getAttribute("widget-type")) {
-            allTextInputs[i].setAttribute("widget-type", "text");
-        }
-    }
-    var allRadioSets = document.querySelectorAll('input[type=radio]');
-    for (let i = 0; i < allRadioSets.length; i++) {
-        if (!allRadioSets[i].getAttribute("widget-type")) {
-            allRadioSets[i].setAttribute("widget-type", "radioset");
-        }
-    }
+    setWidgetType("input[type='text']", "text");
+    setWidgetType("input[type='radio']", "radioset");
+    setWidgetType("input[type='submit']", "button");
 }
 
 initializeWidgetTypes();
@@ -309,6 +309,7 @@ function MicroMetricLogger(screencastId, volunteerName, widgets, nextID) {
         text: TextInputLogs,
         select: SelectInputLogs,
         a: AnchorLogs,
+        button: AnchorLogs,
         datepicker: DatepickerLogs,
         radioset: RadioSetLogs,
         "date-select": SelectInputLogs
@@ -528,7 +529,8 @@ function removeEventListener(selector, eventName, handler) {
 class MicroMetric {
     constructor(logger) {
         this.microMetricLogger = logger;
-        this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], a";
+        this.linksSelector = "a:not([data-micrometric-logger='no-capture']), button:not([data-micrometric-logger='no-capture']), input[type='submit']";
+        this.targetElementsSelector = "input[widget-type='text'], input[widget-type='radio'], input[widget-type='datepicker'], div[widget-type='select'], " + this.linksSelector;
     }
 
     getCandidateWidgets() {
@@ -803,12 +805,12 @@ class MouseDwellTime extends MicroMetric {
         this.lastWidget = null;
         this.lastTimestamp = null;
         document.addEventListener("mousemove", this.mouseMoveHandler);
-        addEventListener("a:not([data-micrometric-logger='no-capture'])", "click", this.clickHandler);
+        addEventListener(this.linksSelector, "click", this.clickHandler);
     }
 
     tearDown() {
         document.removeEventListener("mousemove", this.mouseMoveHandler);
-        removeEventListener("a:not([data-micrometric-logger='no-capture'])", "click", this.clickHandler);
+        removeEventListener(this.linksSelector, "click", this.clickHandler);
     }
 
     updateDwellTime(now) {
@@ -880,7 +882,7 @@ class MisClick extends MicroMetric {
     }
 
     handler(event) {
-        let anchors = document.querySelectorAll('a');
+        let anchors = document.querySelectorAll(this.linksSelector);
         for (let anchor of anchors) {
             if (this.isCloseTo(event.clientX, event.clientY, anchor)) {
                 this.microMetricLogger.getWidgetLogs(anchor).misclicks++;
