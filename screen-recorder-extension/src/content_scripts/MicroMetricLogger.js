@@ -817,12 +817,21 @@ class MouseDwellTime extends MicroMetric {
         if (this.lastWidget) {
             var dwellTime = now - this.lastTimestamp;
             this.microMetricLogger.getWidgetLogs(this.lastWidget).mouseDwellTime += dwellTime;
-            if (dwellTime >= this.dwellThreshold) {
-                if (this.lastWidget.getAttribute("widget-type") != "text" && this.lastWidget.getAttribute("widget-type") != "datepicker") {
-                    this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
-                }
-                this.microMetricLogger.logWidget(this.lastWidget);
-            }
+            return dwellTime;
+        }
+        return null;
+    }
+
+    updateInteractions(dwellTime) {
+        if (dwellTime >= this.dwellThreshold && this.lastWidget.getAttribute("widget-type") != "text" && this.lastWidget.getAttribute("widget-type") != "datepicker") {
+            this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
+        }
+    }
+
+    updateMicroMetrics(now) {
+        var dwellTime = this.updateDwellTime(now);
+        if (dwellTime) {
+            this.updateInteractions(dwellTime);
         }
     }
 
@@ -830,13 +839,14 @@ class MouseDwellTime extends MicroMetric {
         this.currentWidget = this.getTargetWidget({x: event.pageX, y: event.pageY});
         if (this.currentWidget != this.lastWidget) {
             var now = event.timeStamp;
-            this.updateDwellTime(now);
+            this.updateMicroMetrics(now);
             this.lastWidget = this.currentWidget;
             this.lastTimestamp = now;
         }
     }
 
     clickHandler(event) {
+        this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
         this.updateDwellTime(event.timeStamp);
         this.lastWidget = null;
     }
