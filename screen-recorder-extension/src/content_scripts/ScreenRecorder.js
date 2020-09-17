@@ -14,10 +14,10 @@ ScreenRecorder.prototype.toggleRecording = function () {
         screenRecorder.startRecording();
     }
     else {
+        browser.runtime.sendMessage({"message": "stop",  "data":{"widgets": this.eventLogger.getMicroMetrics(), "events": this.events}});
         this.pauseRecording();
         this.recording = false;
         this.eventLogger.stopLogging(); 
-        browser.runtime.sendMessage({"message": "stop",  "data":{"metrics": this.eventLogger.getMicroMetrics(), "events": this.events}});
     }
 }
 
@@ -69,15 +69,14 @@ ScreenRecorder.prototype.setUp = function () {
 ScreenRecorder.prototype.saveScreencast = function () {
     if (this.recording && !this.paused) {
         this.pauseRecording();
-        this.save(true);
+        this.save();
         this.eventLogger.pauseLogging();
     }
 };
 
-ScreenRecorder.prototype.save = function (updateMetrics) {
-    if (this.events.length > 0 || updateMetrics) {
-        browser.runtime.sendMessage({"message":"save", "data":{"events": this.events, "metrics": this.eventLogger.getMicroMetrics(),
-                "nextMetricNumber": this.eventLogger.nextID}});
+ScreenRecorder.prototype.save = function () {
+    if (this.events.length > 0) {
+        browser.runtime.sendMessage({"message":"save", "data":{"events": this.events}});
         this.events = [];
     }
 }

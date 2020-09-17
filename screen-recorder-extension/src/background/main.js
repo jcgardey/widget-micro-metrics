@@ -23,7 +23,7 @@ browser.runtime.onMessage.addListener(function (request) {
        browser.browserAction.setIcon({path: {"64": "resources/play_icon.png"}});
        browser.storage.local.get().then(function (data) {
            if (data.screencastId) {
-               const body = {"events": data.allEvents.concat(request.data.events), "metrics": request.data.metrics, "screencastId": data.screencastId, "screencastName": data.screencastName};
+               const body = {"events": data.allEvents.concat(request.data.events), "metrics": request.data.widgets, "screencastId": data.screencastId, "screencastName": data.screencastName};
                sendRequest(data.serverURL + "screencast", JSON.stringify(body));
            }
        });
@@ -35,17 +35,7 @@ browser.runtime.onMessage.addListener(function (request) {
     if (request.message == "save") {
         browser.storage.local.get("allEvents").then(function (data) {
             const allEvents = data.allEvents.concat(request.data.events);
-            browser.storage.local.set({"allEvents": allEvents, "widgets": request.data.metrics, "nextMetricNumber": request.data.nextMetricNumber});
-        });
-    }
-});
-
-browser.runtime.onMessage.addListener(function (request) {
-    if (request.message == "sendLogs") {
-        const data = JSON.stringify(request.logs);
-        browser.storage.local.get("serverURL").then(function (result) {
-            var url = result.serverURL + "metrics";
-            sendRequest(url, data);
+            browser.storage.local.set({"allEvents": allEvents});
         });
     }
 });
@@ -61,7 +51,6 @@ function sendRequest(url, data, callback) {
         }
     });
 }
-
 
 function getCurrentTab (callback) {
     try {

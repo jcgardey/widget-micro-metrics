@@ -416,6 +416,7 @@ MicroMetricLogger.prototype.startLogging = function () {
 }
 
 MicroMetricLogger.prototype.pauseLogging = function () {
+    this.saveLogs();
     this.focusTime.tearDown();
     this.typingLatency.tearDown();
     this.typingSpeed.tearDown();
@@ -437,16 +438,12 @@ MicroMetricLogger.prototype.pauseLogging = function () {
     this.radiosetSelection.tearDown();
 }
 
+MicroMetricLogger.prototype.saveLogs = function () {
+    browser.storage.local.set({"widgets": this.getMicroMetrics(), "nextMetricNumber": this.nextID});
+}
+
 MicroMetricLogger.prototype.stopLogging = function () {
     this.pauseLogging();
-    document.querySelectorAll('[data-metric-id]').forEach(function (element) {
-        element.removeAttribute('data-metric-id')
-    });
-    /**
-    browser.runtime.sendMessage({
-        "message": "sendLogs",
-        "logs": {"metrics": this.widgets, "screencastId": this.screencastId}
-    });*/
     this.screencastId = null;
     this.volunteerName = null;
 };
@@ -846,7 +843,6 @@ class MouseDwellTime extends MicroMetric {
     }
 
     clickHandler(event) {
-        this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
         this.updateDwellTime(event.timeStamp);
         this.lastWidget = null;
     }
@@ -857,17 +853,24 @@ class Interactions extends MicroMetric {
         super(logger);
         this.targetElementsSelector = "input[widget-type='text'],input[widget-type='datepicker']";
         this.focusHandler = this.focusHandler.bind(this);
+        this.clickHandler = this.clickHandler.bind(this);
     }
 
     setUp() {
         addEventListener(this.targetElementsSelector, "focus", this.focusHandler);
+        addEventListener(this.linksSelector, "click", this.clickHandler);
     }
 
     tearDown() {
         removeEventListener(this.targetElementsSelector, "focus", this.focusHandler);
+        removeEventListener(this.linksSelector, "click", this.clickHandler);
     }
 
     focusHandler(event) {
+        this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
+    }
+
+    clickHandler(event) {
         this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
     }
 }
