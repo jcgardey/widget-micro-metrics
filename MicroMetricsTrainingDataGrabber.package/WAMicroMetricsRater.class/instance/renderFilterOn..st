@@ -4,7 +4,7 @@ renderFilterOn: html
 		class: #toggle;
 		with: [ html span: 'Filter '.
 			html textInput tbsFormControl
-				placeholder: 'id, website or widget kind';
+				placeholder: 'id or website name';
 				onKeyUp:
 					(html jQuery ajax serializeThis
 						callback: [ :value | searchTerm := value ]

@@ -1,3 +1,3 @@
 accessing
 widgetTypes
-	^ self metrics collect: #widgetType
+	^ (self metrics collect: #widgetType as: Set) asOrderedCollection
