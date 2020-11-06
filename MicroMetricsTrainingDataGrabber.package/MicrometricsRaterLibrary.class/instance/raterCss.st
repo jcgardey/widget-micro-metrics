@@ -20,4 +20,8 @@ raterCss
 	}
 	.ratingTextInput, .ratingRadio{display:none}
 	.ratingRadioLabel.unselected{opacity:0.4}
+
+	.controls{margin: 30px 0}
+	.controls > *{margin-right: 20px}
+	.toggle{display: inline-block;}
 	'

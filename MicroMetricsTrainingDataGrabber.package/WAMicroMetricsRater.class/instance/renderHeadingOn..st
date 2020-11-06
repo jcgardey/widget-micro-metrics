@@ -1,4 +1,9 @@
 rendering
 renderHeadingOn: html
 	super renderHeadingOn: html.
-	html paragraph: [ self renderDownladButtonOn: html ]
+	html div
+		class: #controls;
+		with: [ self
+				renderDownladButtonOn: html;
+				renderViewToggleOn: html;
+				renderFilterOn: html ]

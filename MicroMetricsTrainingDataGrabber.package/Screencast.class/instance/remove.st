@@ -1,4 +1,4 @@
-accesing
+accessing
 remove 
 	events do: [ :event | event class remove: event ].
 	metrics do: [ :metric | metric class remove: metric ].

@@ -1,3 +1,5 @@
 rendering
 renderBodyOn: html
-	self renderSamplesListOn: html
+	html div
+		id: #samples;
+		with: [ self renderSamplesListOn: html ]
