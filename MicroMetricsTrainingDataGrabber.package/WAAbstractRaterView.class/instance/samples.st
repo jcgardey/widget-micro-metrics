@@ -1,3 +1,0 @@
-accessing
-samples
-	^ Screencast selectAll.

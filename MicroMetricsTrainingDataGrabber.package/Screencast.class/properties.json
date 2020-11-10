@@ -10,7 +10,8 @@
 		"screencastName",
 		"events",
 		"metrics",
-		"timestamp"
+		"timestamp",
+		"websiteName"
 	],
 	"name" : "Screencast",
 	"type" : "normal"

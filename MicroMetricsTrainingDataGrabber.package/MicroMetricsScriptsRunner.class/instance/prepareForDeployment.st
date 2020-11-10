@@ -4,6 +4,7 @@ prepareForDeployment
 	self
 		setupDatabase;
 		setDeploymentResourceBaseUrl;
+		removeDebugger;
 		stopServer;
 		startServer.
 	MicroMetricsServer

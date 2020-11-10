@@ -5,7 +5,12 @@
 	"classinstvars" : [ ],
 	"pools" : [ ],
 	"classvars" : [ ],
-	"instvars" : [ ],
+	"instvars" : [
+		"compactView",
+		"samples",
+		"searchTerm",
+		"allSamples"
+	],
 	"name" : "WAMicroMetricsRater",
 	"type" : "normal"
 }
