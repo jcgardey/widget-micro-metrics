@@ -14,7 +14,7 @@
       "content_scripts/DateSelects.js",
       "content_scripts/RadioGroup.js",
       "content_scripts/XPathInterpreter.js",
-      "content_scripts/MicroMetriclogger.js",
+      "content_scripts/MicroMetricLogger.js",
       "content_scripts/ScreenRecorder.js"
     ],
     "css": [
