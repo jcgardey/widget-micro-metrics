@@ -69,14 +69,11 @@ HTMLElement.prototype.closestLabel = function () {
 }
 
 DOMRect.prototype.expandWith = function (anotherBoundingBox) {
-    this.left = Math.min(this.left, anotherBoundingBox.left);
-    this.top = Math.min(this.top, anotherBoundingBox.top);
-
-    var newBottom = Math.max(this.bottom, anotherBoundingBox.bottom);
-    this.height = newBottom - this.top;
-
+    var newLeft = Math.min(this.left, anotherBoundingBox.left);
     var newRight = Math.max(this.right, anotherBoundingBox.right);
-    this.width = newRight - this.left;
+    var newTop = Math.min(this.top, anotherBoundingBox.top);
+    var newBottom = Math.max(this.bottom, anotherBoundingBox.bottom);
+    return new DOMRect( newLeft, newTop, newRight - newLeft, newBottom - newTop);
 }
 
 DOMRect.prototype.withPadding = function (padding) {
@@ -171,25 +168,6 @@ function drawBoundingBox(boundingBox) {
 /****************** End HTMLElement Extensions **************/
 
 /************************************************************/
-
-function setWidgetType(selector, widgetType) {
-    var allElements = document.querySelectorAll(selector);
-    for (let i = 0; i < allElements.length; i++) {
-        if (!allElements[i].getAttribute("widget-type")) {
-            allElements[i].setAttribute("widget-type", widgetType);
-        }
-    }
-}
-
-function initializeWidgetTypes() {
-    // add widget-type attribute to text fields to differentiate from datepickers
-    setWidgetType("input[type='text']", "text");
-    setWidgetType("input[type='radio']", "radioset");
-    setWidgetType("input[type='submit']", "button");
-}
-
-initializeWidgetTypes();
-
 
 function WidgetLogs(widget) {
     this.metrics = {
@@ -316,6 +294,9 @@ function MicroMetricLogger(screencastId, volunteerName, widgets, nextID) {
     };
     this.widgetTypes = ["text","radio","datepicker","select", "a"];
 
+    this.initializeWidgetTypes();
+    this.initializeRadioGroups();
+
     this.focusTime = new FocusTime(this);
     this.typingLatency = new TypingLatency(this);
     this.typingSpeed = new TypingSpeed(this);
@@ -335,6 +316,34 @@ function MicroMetricLogger(screencastId, volunteerName, widgets, nextID) {
     this.optionsSelected = new OptionsSelected(this);
     this.radiosetMisClick = new RadioSetMisClick(this);
     this.radiosetSelection = new RadioSetSelection(this);
+}
+
+MicroMetricLogger.prototype.setWidgetType = function (selector, widgetType) {
+    var allElements = document.querySelectorAll(selector);
+    for (let i = 0; i < allElements.length; i++) {
+        if (!allElements[i].getAttribute("widget-type")) {
+            allElements[i].setAttribute("widget-type", widgetType);
+        }
+    }
+}
+
+MicroMetricLogger.prototype.initializeRadioGroups = function () {
+    // intended to capture non-native radio-buttons like the ones of Google Form
+    Array.from(document.querySelectorAll("div[role='radiogroup']")).map(group => {
+        const radioGroupName = "radiogroup-" + Math.random();
+        Array.from(group.querySelectorAll("div[role='radio']")).map(elem => {
+            elem.setAttribute("name", radioGroupName);
+            elem.addEventListener("click", (e) => e.currentTarget.dispatchEvent(new Event("change")));
+        })
+    });
+}
+
+MicroMetricLogger.prototype.initializeWidgetTypes = function () {
+    // add widget-type attribute to text fields to differentiate from datepickers
+    this.radioButtonSelector = "input[type='radio'], div[role='radio']";
+    this.setWidgetType("input[type='text']", "text");
+    this.setWidgetType(this.radioButtonSelector, "radioset");
+    this.setWidgetType("input[type='submit']", "button");
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
@@ -455,7 +464,7 @@ MicroMetricLogger.prototype.getMicroMetrics = function () {
 MicroMetricLogger.prototype.getRadioGroups = function () {
     if (!this.radioGroups) {
         this.radioGroups = [];
-        allRadios = document.querySelectorAll('input[type="radio"]');
+        allRadios = document.querySelectorAll(this.radioButtonSelector);
         for (let input of allRadios) {
             /*
             currentElementBox = input.getAbsoluteBoundingClientRect();
@@ -468,12 +477,11 @@ MicroMetricLogger.prototype.getRadioGroups = function () {
             allLabels = Array.from(input.parentNode.parentNode.querySelectorAll("label, span"));
             closestLabel = allLabels.reduce((min, current) => current.euclidianDistanceToElement(input) < min.euclidianDistanceToElement(input) ? current : min, allLabels[0]);
 
-            if (typeof(this.radioGroups[input.name]) == "undefined") {
-                this.radioGroups[input.name] = new RadioGroup();
+            if (typeof(this.radioGroups[input.getAttribute("name")]) == "undefined") {
+                this.radioGroups[input.getAttribute("name")] = new RadioGroup();
             }
-            this.radioGroups[input.name].addElement(input);
-            this.radioGroups[input.name].addElement(closestLabel);
-
+            this.radioGroups[input.getAttribute("name")].addElement(input);
+            this.radioGroups[input.getAttribute("name")].addElement(closestLabel);
         }
     }
     return this.radioGroups;
@@ -867,11 +875,11 @@ class Interactions extends MicroMetric {
     }
 
     focusHandler(event) {
-        this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
+        this.microMetricLogger.getWidgetLogs(event.currentTarget).interactions += 1;
     }
 
     clickHandler(event) {
-        this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
+        this.microMetricLogger.getWidgetLogs(event.currentTarget).interactions += 1;
     }
 }
 
@@ -1120,16 +1128,16 @@ class HoverToFirstSelection extends MicroMetric {
 
     setUp() {
         document.addEventListener("mousemove", this.moveHandler);
-        addEventListener("input[type=radio]", "change", this.changeHandler);
+        addEventListener(this.microMetricLogger.radioButtonSelector, "change", this.changeHandler);
     }
 
     tearDown() {
         document.removeEventListener("mousemove", this.moveHandler);
-        removeEventListener("input[type=radio]", "change", this.changeHandler);
+        removeEventListener(this.microMetricLogger.radioButtonSelector, "change", this.changeHandler);
     }
 
     changeHandler(event) {
-        let radioGroup = this.microMetricLogger.getRadioGroups()[event.target.name];
+        let radioGroup = this.microMetricLogger.getRadioGroups()[event.target.getAttribute("name")];
         if (this.microMetricLogger.getWidgetLogs(radioGroup).hoverToFirstSelection == 0)
             this.microMetricLogger.getWidgetLogs(radioGroup).hoverToFirstSelection = (new Date().getTime()) - this._hoverTimestamp;
 
@@ -1184,10 +1192,8 @@ class RadioSetMisClick extends MicroMetric {
         };
         Object.keys(this.microMetricLogger.getRadioGroups()).forEach(function (radioGroupName, index) {
             let radioGroup = this.microMetricLogger.getRadioGroups()[radioGroupName];
-            if (radioGroup.boundingBox.includesPoint(point.x, point.y)) {
-                if (event.target.type != "radio" && !event.target.getAttribute("for")) {
-                    this.microMetricLogger.getWidgetLogs(radioGroup).clicks++;
-                }
+            if (!radioGroup.getBoundingBox().includesPoint(point.x, point.y) && radioGroup.getWidgetSurroundings().includesPoint(point.x, point.y)) {     
+                this.microMetricLogger.getWidgetLogs(radioGroup).clicks++;
             }
         }, this);
     }
@@ -1201,15 +1207,15 @@ class RadioSetSelection extends MicroMetric {
     }
 
     setUp() {
-        addEventListener("input[type=radio]", "change", this.onChange);
+        addEventListener(this.microMetricLogger.radioButtonSelector, "change", this.onChange);
     }
 
     tearDown() {
-        removeEventListener("input[type=radio]", "change", this.onChange);
+        removeEventListener(this.microMetricLogger.radioButtonSelector, "change", this.onChange);
     }
 
     onChange(event) {
-        let radioGroup = this.microMetricLogger.getRadioGroups()[event.target.name];
+        let radioGroup = this.microMetricLogger.getRadioGroups()[event.target.getAttribute("name")];
         this.microMetricLogger.getWidgetLogs(radioGroup).selections++;
     }
 }

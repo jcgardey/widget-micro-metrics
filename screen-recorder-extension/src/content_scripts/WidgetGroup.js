@@ -12,8 +12,10 @@ class WidgetGroup {
     }
 
     addElement(anElement) {
-        this.elements.push(anElement);
-        this.getBoundingBox().expandWith(anElement.getAbsoluteBoundingClientRect());
+        if (this.elements.indexOf(anElement) == -1) {
+            this.elements.push(anElement);
+            this.boundingBox = this.getBoundingBox().expandWith(anElement.getAbsoluteBoundingClientRect());
+        }
     }
 
     setMetricID(id) {
