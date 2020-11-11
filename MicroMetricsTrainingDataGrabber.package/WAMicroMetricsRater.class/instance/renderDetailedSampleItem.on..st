@@ -5,6 +5,8 @@ renderDetailedSampleItem: sample on: html
 		with: [ html span: sample timestamp asSimpleDateAndTime.
 			html space.
 			html strong: sample screencastName.
+			html space.
+			self renderSampleRaters: sample on: html.
 			sample inConflict
 				ifTrue: [ html space.
 					html tbsLabel
