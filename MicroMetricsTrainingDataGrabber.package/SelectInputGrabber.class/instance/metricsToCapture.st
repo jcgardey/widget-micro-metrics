@@ -1,4 +1,4 @@
 initialization
 metricsToCapture
 	^ super metricsToCapture
-		, #(optionsSelected optionsDisplayTime)
+		, #(optionsSelected optionsDisplayTime optionsCount)
