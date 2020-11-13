@@ -231,7 +231,8 @@ function SelectInputLogs(widget) {
         //"keystrokes": 0,
         "optionsSelected": 0,
         //"focusTime": 0,
-        "optionsDisplayTime": 0
+        "optionsDisplayTime": 0,
+        "optionsCount": null
     })
 }
 
