@@ -1,4 +1,4 @@
 controlling
 removeSample
 	self sample remove.
-	self answer.
+	self call: WAMicroMetricsRater new.

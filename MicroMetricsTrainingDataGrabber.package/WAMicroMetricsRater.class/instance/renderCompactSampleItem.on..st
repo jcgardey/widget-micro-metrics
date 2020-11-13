@@ -6,6 +6,7 @@ renderCompactSampleItem: sample on: html
 			html space.
 			html strong: sample screencastName.
 			html space.
+			self renderSampleRaters: sample on: html.
 			html span
 				class: #siteName;
 				with: sample websiteName.
