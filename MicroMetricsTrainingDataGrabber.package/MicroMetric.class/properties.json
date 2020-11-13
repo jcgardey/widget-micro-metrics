@@ -11,7 +11,8 @@
 		"timestamp",
 		"valuesDictionary",
 		"ratings",
-		"xpath"
+		"xpath",
+		"widgetBox"
 	],
 	"name" : "MicroMetric",
 	"type" : "normal"
