@@ -68,6 +68,10 @@ HTMLElement.prototype.closestLabel = function () {
     return allLabels.reduce((min, current) => current.euclidianDistanceToElement(this) < min.euclidianDistanceToElement(this) ? current: min, allLabels[0]);
 }
 
+HTMLElement.prototype.getOptionsCount = function () {
+    return this.querySelectorAll("div.option, option").length;    
+}
+
 DOMRect.prototype.expandWith = function (anotherBoundingBox) {
     var newLeft = Math.min(this.left, anotherBoundingBox.left);
     var newRight = Math.max(this.right, anotherBoundingBox.right);
@@ -212,7 +216,8 @@ function TextInputLogs(widget) {
         "focusTime": 0,
         "correctionAmount": 0,
         "mouseTraceLength": 0,
-        "typingIntervals": []
+        "typingIntervals": [],
+        "enteredText": ''
     });
 }
 
@@ -226,7 +231,8 @@ function SelectInputLogs(widget) {
         //"keystrokes": 0,
         "optionsSelected": 0,
         //"focusTime": 0,
-        "optionsDisplayTime": 0
+        "optionsDisplayTime": 0,
+        "optionsCount": null
     })
 }
 
@@ -268,7 +274,8 @@ function RadioSetLogs(widget) {
         "widgetType": "RadioSet",
         "hoverToFirstSelection": 0,
         "selections": 0,
-        "clicks": 0
+        "clicks": 0,
+        "optionsCount": widget.getRadiosCount()
     })
 }
 
@@ -362,6 +369,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
         }
         this.widgets[metricId].html = anElement.getHTML();
         this.widgets[metricId].xpath = anElement.getXPathCollection();
+        this.widgets[metricId].boundingBox = anElement.getWidgetSurroundings();
         this.widgets[metricId].id = metricId;
         this.widgets.volunteer = this.volunteer;
     }
@@ -492,7 +500,7 @@ MicroMetricLogger.prototype.createDateSelects = function () {
     Array.from(document.querySelectorAll("div[widget-type='date-select']")).map(dateSelect => {
         const dateSelectName = dateSelect.getAttribute("data-select-name");
         if (typeof(dateSelects[dateSelectName]) == "undefined") {
-            dateSelects[dateSelectName] = new DateSelects();
+            dateSelects[dateSelectName] = new DateSelects(dateSelectName);
         }
         dateSelects[dateSelectName].addElement(dateSelect);
     });
@@ -506,6 +514,10 @@ MicroMetricLogger.prototype.getDateSelects = function () {
         this.dateSelects = this.createDateSelects();
     }
     return this.dateSelects;
+}
+
+MicroMetricLogger.prototype.getDateSelectNamed = function (aName) {
+    return this.getDateSelects().filter(aDateSelect => aDateSelect.name === aName)[0];
 }
 
 
@@ -581,6 +593,7 @@ class FocusTime extends MicroMetric {
     }
 
     blurHandler(event) {
+        this.microMetricLogger.getWidgetLogs(event.target).enteredText = event.target.value;
         if (!this.currentWidget) {
             return null;
         }
@@ -1304,6 +1317,13 @@ class SelectOptionsDisplayTime extends MicroMetric {
 
     onChange(event) {
         this.microMetricLogger.getWidgetLogs(event.target).optionsDisplayTime += this.getOptionsDisplayTime(event);
+        if (event.target.getAttribute("widget-type") == "date-select") {
+            this.microMetricLogger.getWidgetLogs(event.target).optionsCount = this.microMetricLogger.getDateSelectNamed(event.target.getAttribute("data-select-name")).getTotalOptionsCount();
+        }
+        else {
+            this.microMetricLogger.getWidgetLogs(event.target).optionsCount = event.target.getOptionsCount();
+        }
+       
     }
 }
 
