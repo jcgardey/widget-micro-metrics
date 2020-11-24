@@ -6,14 +6,14 @@ metricsToCSV: widgetType ranked: aBoolean
 				flatCollect: [ :screencast | screencast metricsRankedByWidgetType: widgetType ] ]
 		ifFalse: [ Screencast selectAll
 				flatCollect: [ :screencast | screencast metricsByWidgetType: widgetType ] ].
-	
-	metricKeys := (self collectKeysForMetrics: allMetricsOfWidgetType) asOrderedCollection.
-	
-			
+	metricKeys := (self collectKeysForMetrics: allMetricsOfWidgetType)
+		asOrderedCollection.
 	^ String
 		streamContents: [ :stream | 
 			(NeoCSVWriter on: stream)
 				fieldWriter: #raw;
-				lineEndConvention: #cr;
-				nextPut: metricKeys, (OrderedCollection with: 'rating');
-				nextPutAll: (allMetricsOfWidgetType collect: [ :metric | metric asArrayUsing: metricKeys ]) ]
+				lineEndConvention: #lf;
+				nextPut: metricKeys , (OrderedCollection with: 'rating');
+				nextPutAll:
+					(allMetricsOfWidgetType
+						collect: [ :metric | metric asArrayUsing: metricKeys ]) ]
