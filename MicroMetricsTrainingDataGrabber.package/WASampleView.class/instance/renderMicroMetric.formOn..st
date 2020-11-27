@@ -1,8 +1,9 @@
 rendering
 renderMicroMetric: microMetric formOn: html
 	html
-		"tbsPanelHeading: [ self renderMicroMetric: microMetric headingOn: html ];"
-		tbsPanelBody: [ self renderMicroMetric: microMetric rateInputOn: html.
+		tbsPanelBody:
+			[ "tbsPanelHeading: [ self renderMicroMetric: microMetric headingOn: html ];"
+			self renderMicroMetric: microMetric rateInputOn: html.
 			microMetric ratings
 				do: [ :rating | 
 					html
@@ -12,4 +13,12 @@ renderMicroMetric: microMetric formOn: html
 									html tbsGlyphIcon iconArrowRight.
 									html space.
 									html text: rating value ] ] ]
-				separatedBy: [ html space ] ]
+				separatedBy: [ html space ].
+			html
+				div: [ html checkbox
+						value: microMetric discarded;
+						callback: [ :value | 
+							microMetric
+								discarded: value;
+								save ].
+					html label: 'Descartar' ] ]
