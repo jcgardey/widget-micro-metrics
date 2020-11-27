@@ -72,6 +72,15 @@ HTMLElement.prototype.getOptionsCount = function () {
     return this.querySelectorAll("div.option, option").length;    
 }
 
+HTMLElement.prototype.getWidgetType = function () {
+    if (this.getAttribute("widget-type")) {
+        return this.getAttribute("widget-type");
+    } 
+    else {
+        return this.tagName.toLowerCase();
+    }   
+}
+
 DOMRect.prototype.expandWith = function (anotherBoundingBox) {
     var newLeft = Math.min(this.left, anotherBoundingBox.left);
     var newRight = Math.max(this.right, anotherBoundingBox.right);
@@ -985,12 +994,12 @@ class HoverAndBack extends MicroMetric {
                 var pathAngle = this.lastTrace().angleWith(this.currentTrace());
                 if (this.currentTrace().straightness() > 0.8 && Math.abs(pathAngle) < 40) {
                     var targetElement = document.elementsFromPoint(this.lastTrace().endPoint().x, this.lastTrace().endPoint().y)[0];
-                    if (this.microMetricLogger.widgetTypes.includes(targetElement.getAttribute("widget"))) {
+                    if (this.microMetricLogger.widgetTypes.includes(targetElement.getWidgetType())) {
                         this.microMetricLogger.getWidgetLogs(targetElement).hoverAndBack++;
                     }
                     var startElement = document.elementsFromPoint(this.lastTrace().startPoint().x, this.lastTrace().startPoint().y)[0];
                     var endElement = document.elementsFromPoint(this.currentTrace().endPoint().x, this.currentTrace().endPoint().y)[0];
-                    if (this.microMetricLogger.widgetTypes.includes(startElement.getAttribute("widget")) && startElement == endElement) {
+                    if (this.microMetricLogger.widgetTypes.includes(startElement.getWidgetType()) && startElement == endElement) {
                         this.microMetricLogger.getWidgetLogs(startElement).exitAndBack++;
                     }
                 }
