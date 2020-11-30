@@ -8,14 +8,34 @@ initializeWithPort: aPort
 		GET: '/micrometrics/ping' -> 'pong';
 		GET:
 			'/micrometrics/csv/<:widgetType>'
-				-> [ :request | TeaResponse ok 
+				-> [ :request | 
+					TeaResponse ok
 						headerName: 'Content-type' value: 'text/csv';
-						body: (self metricsToCSV: (request at: #widgetType) ranked: false)];
+						body:
+							(self
+								metricsToCSV: (request at: #widgetType)
+								filter: [ :elem | true ]
+								rating: [ :metric | metric rating ]) ];
 		GET:
-			'/micrometrics/csv/ranked/<:widgetType>'
-				-> [ :request | TeaResponse ok 
+			'/micrometrics/csv/<:widgetType>/consolidated'
+				-> [ :request | 
+					TeaResponse ok
 						headerName: 'Content-type' value: 'text/csv';
-						body: (self metricsToCSV: (request at: #widgetType) ranked: true)];
+						body:
+							(self
+								metricsToCSV: (request at: #widgetType)
+								filter: [ :metric | metric notRanked not ]
+								rating: [ :metric | metric rating ]) ];
+		GET:
+			'/micrometrics/csv/<:widgetType>/averaged'
+				-> [ :request | 
+					TeaResponse ok
+						headerName: 'Content-type' value: 'text/csv';
+						body:
+							(self
+								metricsToCSV: (request at: #widgetType)
+								filter: [ :metric | metric notRanked not ]
+								rating: [ :metric | metric averageRating ]) ];
 		POST:
 			'/micrometrics/metrics/'
 				-> [ :request | 
