@@ -9,6 +9,7 @@
 		"id",
 		"authorId",
 		"timestamp",
+		"discarded",
 		"valuesDictionary",
 		"ratings",
 		"xpath",
