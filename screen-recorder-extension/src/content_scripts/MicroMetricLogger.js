@@ -825,7 +825,7 @@ class MouseDwellTime extends MicroMetric {
         super(logger);
         this.mouseMoveHandler = this.mouseMoveHandler.bind(this);
         this.clickHandler = this.clickHandler.bind(this);
-        this.dwellThreshold = 400;
+        this.dwellThreshold = 2000;
     }
 
     setUp() {
@@ -927,7 +927,7 @@ class MisClick extends MicroMetric {
     handler(event) {
         let anchors = document.querySelectorAll(this.linksSelector);
         for (let anchor of anchors) {
-            if (this.isCloseTo(event.clientX, event.clientY, anchor)) {
+            if (!anchor.getBoundingClientRect().includesPoint(event.clientX, event.clientY) && anchor.getWidgetSurroundings().includesPoint(event.clientX, event.clientY)) {
                 this.microMetricLogger.getWidgetLogs(anchor).misclicks++;
                 console.log(this.microMetricLogger.getWidgetLogs(anchor));
             }
