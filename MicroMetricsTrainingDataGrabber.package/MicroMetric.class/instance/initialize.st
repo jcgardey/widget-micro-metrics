@@ -1,4 +1,5 @@
 initialization
 initialize
 	super initialize.
-	ratings := OrderedCollection new
+	ratings := OrderedCollection new.
+	discarded := false.
