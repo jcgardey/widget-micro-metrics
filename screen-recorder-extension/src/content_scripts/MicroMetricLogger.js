@@ -884,16 +884,19 @@ class Interactions extends MicroMetric {
         this.targetElementsSelector = "input[widget-type='text'],input[widget-type='datepicker']";
         this.focusHandler = this.focusHandler.bind(this);
         this.clickHandler = this.clickHandler.bind(this);
+        this.onSelectClick = this.onSelectClick.bind(this);
     }
 
     setUp() {
         addEventListener(this.targetElementsSelector, "focus", this.focusHandler);
         addEventListener(this.linksSelector, "click", this.clickHandler);
+        addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onSelectClick);
     }
 
     tearDown() {
         removeEventListener(this.targetElementsSelector, "focus", this.focusHandler);
         removeEventListener(this.linksSelector, "click", this.clickHandler);
+        removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onSelectClick);
     }
 
     focusHandler(event) {
@@ -902,6 +905,10 @@ class Interactions extends MicroMetric {
 
     clickHandler(event) {
         this.microMetricLogger.getWidgetLogs(event.currentTarget).interactions += 1;
+    }
+
+    onSelectClick(event) {
+        this.microMetricLogger.getWidgetLogs( this.microMetricLogger.getDateSelectNamed(event.target.parentNode.getAttribute("data-select-name"))).interactions += 1;
     }
 }
 
