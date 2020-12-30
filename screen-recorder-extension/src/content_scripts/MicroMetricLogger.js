@@ -77,7 +77,7 @@ HTMLElement.prototype.getWidgetType = function () {
         return this.getAttribute("widget-type");
     } 
     else {
-        return this.tagName.toLowerCase();
+        return "a";
     }   
 }
 
@@ -303,7 +303,6 @@ function MicroMetricLogger(screencastId, volunteerName, widgets, nextID) {
         text: TextInputLogs,
         select: SelectInputLogs,
         a: AnchorLogs,
-        button: AnchorLogs,
         datepicker: DatepickerLogs,
         radioset: RadioSetLogs,
         "date-select": SelectInputLogs
@@ -359,7 +358,7 @@ MicroMetricLogger.prototype.initializeWidgetTypes = function () {
     this.radioButtonSelector = "input[type='radio'], div[role='radio']";
     this.setWidgetType("input[type='text']", "text");
     this.setWidgetType(this.radioButtonSelector, "radioset");
-    this.setWidgetType("input[type='submit']", "button");
+    this.setWidgetType("input[type='submit']", "a");
 }
 
 MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
@@ -369,7 +368,7 @@ MicroMetricLogger.prototype.getWidgetLogs = function (anElement) {
         metricId = anElement.getAttribute("data-metric-id");
     }
     if (!this.widgets[metricId]) {
-        var loggerName = anElement.getAttribute("widget-type") ? anElement.getAttribute("widget-type") : anElement.tagName.toLowerCase();
+        var loggerName = anElement.getWidgetType();
         if (this.loggers[loggerName]) {
             this.widgets[metricId] = new (this.loggers[loggerName])(anElement).getMetrics();
         }
@@ -850,7 +849,7 @@ class MouseDwellTime extends MicroMetric {
     }
 
     updateInteractions(dwellTime) {
-        if (dwellTime >= this.dwellThreshold && this.lastWidget.getAttribute("widget-type") != "text" && this.lastWidget.getAttribute("widget-type") != "datepicker") {
+        if (dwellTime >= this.dwellThreshold && this.lastWidget.getWidgetType() === "a") {
             this.microMetricLogger.getWidgetLogs(this.lastWidget).interactions += 1;
         }
     }
@@ -890,13 +889,13 @@ class Interactions extends MicroMetric {
     setUp() {
         addEventListener(this.targetElementsSelector, "focus", this.focusHandler);
         addEventListener(this.linksSelector, "click", this.clickHandler);
-        addEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onSelectClick);
+        addEventListener("div[widget-type='select'], div[widget-type='date-select']", "open", this.onSelectClick);
     }
 
     tearDown() {
         removeEventListener(this.targetElementsSelector, "focus", this.focusHandler);
         removeEventListener(this.linksSelector, "click", this.clickHandler);
-        removeEventListener("div[widget-type='select'] .title, div[widget-type='date-select'] .title", "click", this.onSelectClick);
+        removeEventListener("div[widget-type='select'], div[widget-type='date-select']", "open", this.onSelectClick);
     }
 
     focusHandler(event) {
@@ -908,7 +907,12 @@ class Interactions extends MicroMetric {
     }
 
     onSelectClick(event) {
-        this.microMetricLogger.getWidgetLogs( this.microMetricLogger.getDateSelectNamed(event.target.parentNode.getAttribute("data-select-name"))).interactions += 1;
+        if (event.target.getWidgetType() == "date-select") {
+            this.microMetricLogger.getWidgetLogs( this.microMetricLogger.getDateSelectNamed(event.target.getAttribute("data-select-name"))).interactions += 1;
+        }
+        else {
+            this.microMetricLogger.getWidgetLogs(event.target).interactions += 1;
+        }
     }
 }
 
