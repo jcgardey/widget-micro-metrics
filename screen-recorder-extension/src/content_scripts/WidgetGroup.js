@@ -46,4 +46,8 @@ class WidgetGroup {
     getXPathCollection() {
         return this.elements.map(elem => elem.getXPath());
     }
+
+    getWidgetType() {
+        return this["widget-type"];
+    }
 }
