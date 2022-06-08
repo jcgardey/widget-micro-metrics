@@ -14,6 +14,6 @@
   "dependencies": {
     "axios": "^0.19.2",
     "jquery": "^3.5.1",
-    "rrweb": "^0.9.3"
+    "rrweb": "^1.1.3"
   }
 }
