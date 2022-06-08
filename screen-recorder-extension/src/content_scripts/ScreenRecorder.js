@@ -1,7 +1,7 @@
 function ScreenRecorder() {
   this.recording = false;
   this.paused = false;
-  this.modal = new RecorderModal();
+  this.modal = new RecorderModal(this);
   this.events = [];
   this.allEvents = [];
   window.onbeforeunload = this.saveScreencast.bind(this);
@@ -10,33 +10,41 @@ function ScreenRecorder() {
   setInterval(this.save.bind(this), 5000);
 }
 
+ScreenRecorder.prototype.createScreencast = function () {
+  this.screencastId =
+    Math.random().toString(36).substring(2, 15) + '-' + Date.now();
+  this.screencastName = this.getNextID();
+  browser.storage.local.set({
+    screencastId: this.screencastId,
+    screencastName: this.screencastName,
+    allEvents: [],
+  });
+  browser.runtime.sendMessage({
+    message: 'start',
+    screencastId: this.screencastId,
+    screencastName: this.screencastName,
+  });
+};
+
+ScreenRecorder.prototype.stopRecording = function () {
+  browser.runtime.sendMessage({
+    message: 'stop',
+    data: {
+      widgets: this.eventLogger.getMicroMetrics(),
+      events: this.events,
+    },
+  });
+  this.pauseRecording();
+  this.recording = false;
+  this.eventLogger.stopLogging();
+};
+
 ScreenRecorder.prototype.toggleRecording = function () {
   if (!this.recording && !this.paused) {
-    this.screencastId =
-      Math.random().toString(36).substring(2, 15) + '-' + Date.now();
-    this.screencastName = this.getNextID();
-    browser.storage.local.set({
-      screencastId: this.screencastId,
-      screencastName: this.screencastName,
-      allEvents: [],
-    });
-    browser.runtime.sendMessage({
-      message: 'start',
-      screencastId: this.screencastId,
-      screencastName: this.screencastName,
-    });
+    screenRecorder.createScreencast();
     screenRecorder.startRecording();
   } else {
-    browser.runtime.sendMessage({
-      message: 'stop',
-      data: {
-        widgets: this.eventLogger.getMicroMetrics(),
-        events: this.events,
-      },
-    });
-    this.pauseRecording();
-    this.recording = false;
-    this.eventLogger.stopLogging();
+    screenRecorder.stopRecording();
   }
 };
 
