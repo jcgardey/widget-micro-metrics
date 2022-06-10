@@ -3,9 +3,39 @@
     right: 10px;
     position: fixed;
     z-index: 99999;
-    height: 3.5%;
-    width: 8%;
+    height: 4em;
+    width: 14em;
     margin: 4px;
+    padding: 4px;
     border-radius: 3px;
     border:0;
+}
+
+#recorder-questionnaire {
+    position: fixed;
+    z-index: 99999;
+    top: 25%;
+    left: 25%;
+    box-shadow: 0 0 10px #888888;
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    width: 800px;
+}
+
+.recorder-title {
+    font-size: 20px;
+}
+
+.recorder-radio {
+    margin: 0 40px;
+}
+
+.recorder-question {
+    font-size: 18px;
+}
+
+.recorder-label {
+    display: inline-block;
+    max-width: 100px;
 }

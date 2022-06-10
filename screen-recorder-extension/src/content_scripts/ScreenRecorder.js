@@ -1,6 +1,5 @@
 function ScreenRecorder() {
   this.recording = false;
-  this.paused = false;
   this.modal = new RecorderModal(this);
   this.events = [];
   this.allEvents = [];
@@ -8,6 +7,7 @@ function ScreenRecorder() {
   window.onblur = this.saveScreencast.bind(this);
   // this function will send events to the backend and reset the events array
   setInterval(this.save.bind(this), 5000);
+  this.finished = false;
 }
 
 ScreenRecorder.prototype.createScreencast = function () {
@@ -26,32 +26,32 @@ ScreenRecorder.prototype.createScreencast = function () {
   });
 };
 
-ScreenRecorder.prototype.stopRecording = function () {
+ScreenRecorder.prototype.stopRecording = function (finished) {
   browser.runtime.sendMessage({
     message: 'stop',
     data: {
       widgets: this.eventLogger.getMicroMetrics(),
       events: this.events,
+      finished: finished || false,
+      time: (new Date() - this.startTime) / 1000,
     },
   });
   this.pauseRecording();
-  this.recording = false;
   this.eventLogger.stopLogging();
 };
 
 ScreenRecorder.prototype.toggleRecording = function () {
-  if (!this.recording && !this.paused) {
+  if (!this.recording) {
     screenRecorder.createScreencast();
     screenRecorder.startRecording();
   } else {
-    screenRecorder.stopRecording();
+    screenRecorder.stopRecording(true);
   }
 };
 
 ScreenRecorder.prototype.pauseRecording = function () {
   this.stopScreencast();
   this.modal.hide();
-  this.paused = true;
   this.recording = false;
 };
 
@@ -308,7 +308,6 @@ ScreenRecorder.prototype.getNextID = function () {
 ScreenRecorder.prototype.startRecording = function (widgets, nextMetricNumber) {
   this.modal.show();
   this.recording = true;
-  this.paused = false;
   const me = this;
   this.stopScreencast = rrweb.record({
     emit(event) {
@@ -322,10 +321,11 @@ ScreenRecorder.prototype.startRecording = function (widgets, nextMetricNumber) {
     nextMetricNumber
   );
   this.eventLogger.startLogging();
+  this.startTime = new Date();
 };
 
 ScreenRecorder.prototype.saveScreencast = function () {
-  if (this.recording && !this.paused) {
+  if (this.recording) {
     this.pauseRecording();
     this.save();
     this.eventLogger.pauseLogging();
