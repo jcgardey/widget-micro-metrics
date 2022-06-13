@@ -59,5 +59,8 @@ initializeWithPort: aPort
 					TeaResponse ok
 						headerName: 'Access-Control-Allow-Origin' value: '*';
 						body: (self findScreencast: (request at: #id)) events ];
-		output: #json.
+		output: #json;
+		POST:
+			'/micrometrics/questionnaire/<:id>'
+				-> [ :request | self saveQuestionnaire: request ].
 	server start

@@ -13,7 +13,8 @@
 		"timestamp",
 		"websiteName",
 		"taskCompleted",
-		"duration"
+		"duration",
+		"questionnaire"
 	],
 	"name" : "Screencast",
 	"type" : "normal"
