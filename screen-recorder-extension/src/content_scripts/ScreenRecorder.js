@@ -11,18 +11,14 @@ function ScreenRecorder() {
 }
 
 ScreenRecorder.prototype.createScreencast = function () {
-  this.screencastId =
-    Math.random().toString(36).substring(2, 15) + '-' + Date.now();
-  this.screencastName = this.getNextID();
+  this.id = this.getNextID();
   browser.storage.local.set({
-    screencastId: this.screencastId,
-    screencastName: this.screencastName,
+    screencastId: this.id,
     allEvents: [],
   });
   browser.runtime.sendMessage({
     message: 'start',
-    screencastId: this.screencastId,
-    screencastName: this.screencastName,
+    id: this.id,
   });
 };
 
@@ -315,12 +311,7 @@ ScreenRecorder.prototype.startRecording = function (widgets, nextMetricNumber) {
       me.events.push(event);
     },
   });
-  this.eventLogger = new MicroMetricLogger(
-    this.screencastId,
-    this.screencastName,
-    widgets,
-    nextMetricNumber
-  );
+  this.eventLogger = new MicroMetricLogger(this.id, widgets, nextMetricNumber);
   this.eventLogger.startLogging();
 };
 
@@ -346,8 +337,7 @@ ScreenRecorder.prototype.checkExistingScreencast = function () {
   const me = this;
   browser.storage.local.get().then(function (data) {
     if (data.screencastId) {
-      me.screencastId = data.screencastId;
-      me.screencastName = data.screencastName;
+      me.id = data.screencastId;
       me.startRecording(data.widgets, data.nextMetricNumber);
     }
   });
