@@ -4,7 +4,7 @@ renderCompactSampleItem: sample on: html
 		callback: [ self renderSample: sample ];
 		with: [ html span: sample timestamp asSimpleDate.
 			html space.
-			html strong: sample screencastName.
+			html strong: sample id.
 			html space.
 			self renderSampleRaters: sample on: html.
 			html span
