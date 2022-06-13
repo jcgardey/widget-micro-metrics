@@ -7,7 +7,6 @@
 	"classvars" : [ ],
 	"instvars" : [
 		"id",
-		"authorId",
 		"timestamp",
 		"discarded",
 		"valuesDictionary",
