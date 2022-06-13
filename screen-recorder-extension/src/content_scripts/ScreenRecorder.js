@@ -33,7 +33,7 @@ ScreenRecorder.prototype.stopRecording = function (finished) {
       widgets: this.eventLogger.getMicroMetrics(),
       events: this.events,
       finished: finished || false,
-      time: (new Date() - this.startTime) / 1000,
+      time: new Date() - this.startTime,
     },
   });
   this.pauseRecording();

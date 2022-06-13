@@ -81,10 +81,11 @@ function getCurrentTab(callback) {
 
 browser.runtime.onMessage.addListener(function (request) {
   if (request.message == 'questionnaire') {
+    const { screencastName, ...questions } = request.data;
     browser.storage.local.get().then(function (options) {
       sendRequest(
-        `${options.serverURL}questionnaire`,
-        JSON.stringify(request.data)
+        `${options.serverURL}questionnaire/${screencastName}`,
+        JSON.stringify({ questions })
       );
     });
   }
