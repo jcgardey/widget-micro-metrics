@@ -11,7 +11,9 @@
 		"events",
 		"metrics",
 		"timestamp",
-		"websiteName"
+		"websiteName",
+		"taskCompleted",
+		"duration"
 	],
 	"name" : "Screencast",
 	"type" : "normal"
