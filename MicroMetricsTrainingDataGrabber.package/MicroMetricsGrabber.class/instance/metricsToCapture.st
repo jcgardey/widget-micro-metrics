@@ -1,3 +1,3 @@
 initialization
 metricsToCapture
-	^ #(widgetType authorId volunteer interactions mouseTraceLength mouseDwellTime hoverAndBack exitAndBack label html)
+	^ #(widgetType interactions mouseTraceLength mouseDwellTime hoverAndBack exitAndBack label html)
