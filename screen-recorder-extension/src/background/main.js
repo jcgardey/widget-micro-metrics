@@ -79,10 +79,10 @@ function getCurrentTab(callback) {
 
 browser.runtime.onMessage.addListener(function (request) {
   if (request.message == 'questionnaire') {
-    const { screencastName, ...questions } = request.data;
+    const { id, ...questions } = request.data;
     browser.storage.local.get().then(function (options) {
       sendRequest(
-        `${options.serverURL}questionnaire/${screencastName}`,
+        `${options.serverURL}questionnaire/${id}`,
         JSON.stringify({ questions })
       );
     });

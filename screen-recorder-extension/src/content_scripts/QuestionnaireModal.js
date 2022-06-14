@@ -1,5 +1,5 @@
-function QuestionnaireModal(screencastName) {
-  this.screencastName = screencastName;
+function QuestionnaireModal(id) {
+  this.id = id;
 }
 
 QuestionnaireModal.prototype.show = function () {
@@ -90,7 +90,7 @@ QuestionnaireModal.prototype.sendQuestionnaire = function () {
   browser.runtime.sendMessage({
     message: 'questionnaire',
     data: {
-      screencastName: this.screencastName,
+      id: this.id,
       question_1: document.querySelector('input[name="question_1"]:checked')
         .value,
       question_2: document.querySelector('input[name="question_2"]:checked')
