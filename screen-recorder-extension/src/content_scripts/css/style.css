@@ -9,6 +9,32 @@
     padding: 4px;
     border-radius: 3px;
     border:0;
+    background-color: #f73636;
+    color: white;
+    padding: 5px; 
+}
+
+#recorder-container h5 {
+    color : whitesmoke;
+    font-family : "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size : 14px;
+    font-weight : 400;
+    text-align : center;
+    margin : auto;
+}
+
+#recorder-container button {
+    border: none;
+    border-radius: 5px;
+    padding: 3px 6px;
+    background-color: white;
+    color: #f73636;
+    font-size: 14px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+#recorder-container button:hover {
+    cursor: pointer;
 }
 
 #recorder-questionnaire {
@@ -23,19 +49,19 @@
     width: 800px;
 }
 
-.recorder-title {
+#recorder-questionnaire .recorder-title {
     font-size: 20px;
 }
 
-.recorder-radio {
+#recorder-questionnaire .recorder-radio {
     margin: 0 40px;
 }
 
-.recorder-question {
+#recorder-questionnaire .recorder-question {
     font-size: 18px;
 }
 
-.recorder-label {
+#recorder-questionnaire .recorder-label {
     display: inline-block;
     max-width: 100px;
 }

@@ -2,7 +2,7 @@
 browser.storage.local.get('serverURL').then(function (result) {
   if (!result.serverURL) {
     browser.storage.local.set({
-      serverURL: 'http://localhost:1701/micrometrics/',
+      serverURL: 'http://usabilityrater.tk/micrometrics/',
     });
   }
 });
@@ -27,8 +27,7 @@ browser.runtime.onMessage.addListener(function (request) {
         const body = {
           events: data.allEvents.concat(request.data.events),
           metrics: request.data.widgets,
-          screencastId: data.screencastId,
-          screencastName: data.screencastName,
+          id: data.screencastId,
           finished: request.data.finished,
           time: request.data.time,
         };
@@ -37,7 +36,6 @@ browser.runtime.onMessage.addListener(function (request) {
     });
     browser.storage.local.remove([
       'screencastId',
-      'screencastName',
       'events',
       'widgets',
       'nextMetricNumber',
@@ -81,10 +79,10 @@ function getCurrentTab(callback) {
 
 browser.runtime.onMessage.addListener(function (request) {
   if (request.message == 'questionnaire') {
-    const { screencastName, ...questions } = request.data;
+    const { id, ...questions } = request.data;
     browser.storage.local.get().then(function (options) {
       sendRequest(
-        `${options.serverURL}questionnaire/${screencastName}`,
+        `${options.serverURL}questionnaire/${id}`,
         JSON.stringify({ questions })
       );
     });
