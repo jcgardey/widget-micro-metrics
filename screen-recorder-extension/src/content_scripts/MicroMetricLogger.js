@@ -1466,11 +1466,10 @@ class DatepickerMicroMetric extends MicroMetric {
 
   onBlur(event) {
     this.currentWidget = event.target;
-    addEventListener(
-      "div.salsa-calendar[data-input-id='" + this.currentWidget.id + "']",
-      'click',
-      this.onCalendarClick
-    );
+    var datepicker = Array.from(
+      document.querySelectorAll('div.salsa-calendar')
+    ).filter((elem) => elem.style.display === '')[0];
+    datepicker.addEventListener('click', this.onCalendarClick);
   }
 
   onCalendarClick() {}
