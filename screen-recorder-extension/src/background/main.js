@@ -2,7 +2,7 @@
 browser.storage.local.get('serverURL').then(function (result) {
   if (!result.serverURL) {
     browser.storage.local.set({
-      serverURL: 'http://usabilityrater.tk/micrometrics/',
+      serverURL: 'http://usabilityrater.ml/micrometrics/',
     });
   }
 });
@@ -31,6 +31,7 @@ browser.runtime.onMessage.addListener(function (request) {
           finished: request.data.finished,
           time: request.data.time,
         };
+        console.log(body);
         sendRequest(`${data.serverURL}screencast`, JSON.stringify(body));
       }
     });
@@ -88,4 +89,3 @@ browser.runtime.onMessage.addListener(function (request) {
     });
   }
 });
-
