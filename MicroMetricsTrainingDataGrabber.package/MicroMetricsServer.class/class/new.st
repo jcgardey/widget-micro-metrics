@@ -1,3 +1,3 @@
 instance creation
 new
-	^ self onPort: 1701
+	^ self onPort: 1702

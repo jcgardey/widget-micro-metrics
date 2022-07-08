@@ -1,3 +1,3 @@
 uploaded
 localScreencastBaseUrl
-	^ 'http://localhost:1701'
+	^ 'http://localhost:1702'
