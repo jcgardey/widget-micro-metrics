@@ -1,3 +1,3 @@
 initialization
 metricsToCapture
-	^ #(widgetType interactions mouseTraceLength mouseDwellTime hoverAndBack exitAndBack label html)
+	^ #(widgetType interactions errors mouseTraceLength mouseDwellTime hoverAndBack exitAndBack label html)

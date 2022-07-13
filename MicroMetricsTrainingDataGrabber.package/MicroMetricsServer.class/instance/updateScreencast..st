@@ -7,7 +7,8 @@ updateScreencast: request
 		ifNil: [ screencastFound := Screencast
 				id: (jsonBody at: 'id')
 				taskCompleted: (jsonBody at: 'finished')
-				duration: (Duration milliSeconds: (jsonBody at: 'time'))].
+				duration: (Duration milliSeconds: (jsonBody at: 'time'))
+				errors: (jsonBody at: 'errors') ].
 	screencastFound
 		addEvents:
 			((jsonBody at: 'events')
