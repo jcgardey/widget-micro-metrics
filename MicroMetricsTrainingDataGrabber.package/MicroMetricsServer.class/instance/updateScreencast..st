@@ -8,7 +8,8 @@ updateScreencast: request
 				id: (jsonBody at: 'id')
 				taskCompleted: (jsonBody at: 'finished')
 				duration: (Duration milliSeconds: (jsonBody at: 'time'))
-				errors: (jsonBody at: 'errors') ].
+				errors: (jsonBody at: 'errors')
+				questions: (jsonBody at: 'questions') ].
 	screencastFound
 		addEvents:
 			((jsonBody at: 'events')
