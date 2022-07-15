@@ -9,7 +9,7 @@ updateScreencast: request
 				taskCompleted: (jsonBody at: 'finished')
 				duration: (Duration milliSeconds: (jsonBody at: 'time'))
 				errors: (jsonBody at: 'errors')
-				questions: (jsonBody at: 'questions') ].
+				questionnaire: (jsonBody at: 'questions') ].
 	screencastFound
 		addEvents:
 			((jsonBody at: 'events')

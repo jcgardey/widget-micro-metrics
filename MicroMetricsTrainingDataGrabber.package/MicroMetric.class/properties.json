@@ -12,7 +12,8 @@
 		"valuesDictionary",
 		"ratings",
 		"xpath",
-		"widgetBox"
+		"widgetBox",
+		"url"
 	],
 	"name" : "MicroMetric",
 	"type" : "normal"

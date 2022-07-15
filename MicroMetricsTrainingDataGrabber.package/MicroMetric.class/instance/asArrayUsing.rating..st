@@ -3,8 +3,8 @@ asArrayUsing: someMetricKeys rating: ratingBlock
 	| values |
 	values := someMetricKeys
 		collect: [ :key | 
-			key = #id
-				ifTrue: [ self id ]
+			(#(id url) includes: key)
+				ifTrue: [ self perform: key ]
 				ifFalse: [ (self valuesDictionary at: key ifAbsent: 'NaN') sanitizeCSV ] ].
 	values addLast: (ratingBlock value: self).
 	^ values

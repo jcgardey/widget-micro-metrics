@@ -13,3 +13,4 @@ metricFrom: request
 		valuesDictionary: values
 		xpath: (request at: #xpath)
 		widgetBox: (request at: #boundingBox)
+		url: (request at: #url)

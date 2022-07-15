@@ -1,7 +1,8 @@
 accessing
-keys 
+keys
 	| keys |
 	keys := self valuesDictionary keys asOrderedCollection.
-	keys removeAll: #(authorId volunteer html).
-	keys addFirst: #id. 
+	keys removeAll: #(html).
+	keys addFirst: #id.
+	keys add: #url.
 	^ keys
