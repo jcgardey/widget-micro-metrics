@@ -1,8 +1,11 @@
 as yet unclassified
 bootstrap: spec
 	spec
-		project: 'Bootstrap'
-		with: [ spec
-				className: 'ConfigurationOfBootstrap';
-				versionString: #stable;
-				repository: 'http://smalltalkhub.com/mc/TorstenBergmann/Bootstrap/main/' ]
+		package: 'Bootstrap-Core'
+		with: [ spec repository: 'github://astares/Seaside-Bootstrap/src' ].
+	spec
+		package: 'Bootstrap-Widgets'
+		with: [ spec repository: 'github://astares/Seaside-Bootstrap/src' ].
+	spec
+		package: 'Bootstrap-Jasny'
+		with: [ spec repository: 'github://astares/Seaside-Bootstrap/src' ]
