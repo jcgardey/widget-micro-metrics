@@ -52,13 +52,20 @@ initializeWithPort: aPort
 						value: '*' ];
 		POST:
 			'/micrometrics/screencast'
-				-> [ :request | self updateScreencast: request ];
+				-> [ :request | self updateScreencast: request.
+					TeaResponse ok
+						headerName: 'Access-Control-Allow-Origin' value: '*';
+						yourself ];
 		GET:
 			'micrometrics/screencast/<:id>'
 				-> [ :request | 
 					TeaResponse ok
 						headerName: 'Access-Control-Allow-Origin' value: '*';
 						body: (self findScreencast: (request at: #id)) events ];
+		output: #json;
+		GET:
+			'micrometrics/screencast_names'
+				-> [ :request | TeaResponse ok body: self screencastsByWebsitename ];
 		output: #json;
 		POST:
 			'/micrometrics/questionnaire/<:id>'
